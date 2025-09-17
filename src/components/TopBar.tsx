@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from './ui/button';
 import { motion } from 'motion/react';
 import { ProfileModal } from './ProfileModal';
@@ -19,6 +21,8 @@ interface TopBarProps {
 export function TopBar({ onMobileMenuToggle }: TopBarProps) {
   // const { isLoggedIn } = useUser();
   const signer = useSigner();
+  console.log("Signer in TopBar::", signer);
+  
   const { userSession } = useAuth();
   const { data: rootBalance, /*isLoading*/ } = useRootBalanceInfo();
   console.log("userSession.user::",userSession?.user);

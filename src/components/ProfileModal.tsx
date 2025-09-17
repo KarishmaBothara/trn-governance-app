@@ -28,7 +28,7 @@ export function ProfileModal({ profileName, walletAddress, fpassAddress, trigger
 
   const handleDisconnect = () => {
     // Mock disconnect functionality
-    signOutPass({ postRedirecturi: "http://localhost:3000" })
+    signOutPass({ postRedirecturi: "http://localhost:3000", flow: 'redirect', disableConsent: true })
     toast.success('Wallet disconnected');
   };
 
