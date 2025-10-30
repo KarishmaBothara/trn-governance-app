@@ -34,7 +34,7 @@ const customThemeConfig: ThemeConfig = {
 export function QueryProvider({ children }: React.PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
-      <TrnApiProvider customProviderUrl="wss://porcini.rootnet.app/ws">
+      <TrnApiProvider customProviderUrl="ws://127.0.0.1:9944">
         <AuthUiProvider
           wagmiConfig={wagmiConfig}
           themeConfig={customThemeConfig}

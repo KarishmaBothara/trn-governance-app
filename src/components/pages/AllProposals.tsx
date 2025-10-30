@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect, useMemo} from 'react';
 import { NavigationItem } from '@/app/page';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -10,11 +10,20 @@ import { ProposalCard } from '../ProposalCard';
 // import { Search, Filter, X, ArrowUpDown, Clock, ArrowUp, ArrowDown, Vote, Users, Calendar, TrendingUp, Activity } from 'lucide-react';
 import { Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useProposalInfo } from "@/hooks/useProposal";
+import { useReferendumInfo } from "@/hooks/useReferendums";
+// import {useBestNumber} from "@/hooks/useBestNumber";
+import {useChangeCalc} from "@/hooks/useChangeCalc";
+import {BN_ONE} from "@polkadot/util";
+import { Referendum } from "@/components/pages/Referendum";
+import {useBestNumber} from "@/hooks/useBestNumber";
+
 const leftIcon = "/../../imports/left_icon.png";
 
 interface AllProposalsProps {
   onNavigate: (page: NavigationItem) => void;
-  onSelectProposal: (id: string) => void;
+  onSelectProposalId: (id: string) => void;
+  onSelectProposal: (proposal: any) => void;
   defaultTab?: 'proposals' | 'referendums';
 }
 
@@ -25,7 +34,7 @@ const REFERENDUM_STATUS_OPTIONS = ['All Status', 'Active', 'Passed', 'Rejected',
 
 type TabType = 'proposals' | 'referendums';
 
-interface Referendum {
+export interface ReferendumInt {
   id: string;
   title: string;
   status: 'Active' | 'Passed' | 'Rejected' | 'Cancelled' | 'Fast-Tracked';
@@ -43,101 +52,90 @@ interface Referendum {
   bondedAmount: string;
 }
 
-// Helper function to get status badge color
-const getStatusBadgeClass = (status: string) => {
-  switch (status) {
-    case 'Active':
-      return 'bg-blue-500/20 text-blue-400';
-    case 'Passed':
-      return 'bg-green-500/20 text-green-400';
-    case 'Rejected':
-      return 'bg-red-500/20 text-red-400';
-    case 'Cancelled':
-      return 'bg-gray-500/20 text-gray-400';
-    case 'Fast-Tracked':
-      return 'bg-purple-500/20 text-purple-400';
-    default:
-      return 'bg-muted/20 text-muted-foreground';
-  }
-};
 
-// Mock proposal data matching the shared component interface - Updated with 28-day cycles
-const allProposals = Array.from({ length: 20 }, (_, i) => {
-  // Calculate remaining days until next 28-day scheduling window
-  const schedulingCycleDays = 28;
-  const daysSinceLastSchedule = Math.floor(Math.random() * schedulingCycleDays);
-  const daysUntilNextSchedule = schedulingCycleDays - daysSinceLastSchedule;
-
-  return {
-    id: `6354${i + 2}`,
-    title: 'Proposal title goes here',
-    status: i % 4 === 0 ? 'passed' : i % 4 === 1 ? 'active' : i % 4 === 2 ? 'rejected' : 'fast-tracked' as const,
-    track: TRACK_OPTIONS[Math.floor(Math.random() * (TRACK_OPTIONS.length - 1)) + 1], // Exclude 'All Tracks'
-    aye: Math.floor(Math.random() * 100),
-    nay: Math.floor(Math.random() * 100),
-    daysLeft: daysUntilNextSchedule, // Days until next 28-day scheduling cycle
-    proposer: 'FV Seona',
-    proposerAvatar: leftIcon,
-  };
-});
-
-// Mock referendum data - Updated with 28-day voting period and cancelled status support
-const allReferendums: Referendum[] = Array.from({ length: 15 }, (_, i) => {
-  const ayeVotes = Math.floor(Math.random() * 5000000) + 1000000;
-  const nayVotes = Math.floor(Math.random() * 3000000) + 500000;
-  const totalVotes = ayeVotes + nayVotes;
-  const ayePercentage = Math.round((ayeVotes / totalVotes) * 100);
-  const nayPercentage = 100 - ayePercentage;
-
-  // Calculate 28-day voting period remaining time
-  const submittedDaysAgo = Math.floor(Math.random() * 28); // 0-28 days ago
-  const votingPeriodDays = 28; // 28-day voting period
-  const daysRemaining = Math.max(0, votingPeriodDays - submittedDaysAgo);
-  const hoursRemaining = daysRemaining * 24 + Math.floor(Math.random() * 24);
-
-  // Some referendums might be cancelled by council
-  const isCancelled = i === 2 || i === 7; // Mock some cancelled referendums
-
-  return {
-    id: `${800 + i}`,
-    title: i === 0 ? 'Runtime Upgrade v1.2.0' :
-           i === 1 ? 'Treasury Funding for Ecosystem Development' :
-           i === 2 ? 'Validator Set Expansion Proposal' :
-           i === 3 ? 'Governance Parameter Updates' :
-           `Referendum ${i + 1}: System Enhancement`,
-    status: isCancelled ? 'Cancelled' :
-            hoursRemaining === 0 ? (Math.random() > 0.5 ? 'Passed' : 'Rejected') :
-            i % 5 === 0 ? 'Active' : i % 5 === 1 ? 'Passed' : i % 5 === 2 ? 'Rejected' : i % 5 === 3 ? 'Cancelled' : 'Fast-Tracked',
-    track: TRACK_OPTIONS[Math.floor(Math.random() * (TRACK_OPTIONS.length - 1)) + 1],
-    proposer: i % 3 === 0 ? 'FV Seona' : i % 3 === 1 ? 'Alexander Chen' : 'Maria Rodriguez',
-    proposerAvatar: leftIcon,
-    ayeVotes,
-    nayVotes,
-    ayePercentage,
-    nayPercentage,
-    conviction: Math.floor(Math.random() * 6) + 1,
-    votingPeriodHours: isCancelled ? 0 : hoursRemaining, // Cancelled referendums have no remaining time
-    enactmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 30-day enactment delay
-    submittedDate: new Date(Date.now() - submittedDaysAgo * 24 * 60 * 60 * 1000).toLocaleDateString(),
-    bondedAmount: `${Math.floor(Math.random() * 50) + 10} ROOT`
-  };
-});
-
-export function AllProposals({ onNavigate, onSelectProposal, defaultTab = 'proposals' }: AllProposalsProps) {
+export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal, defaultTab = 'proposals' }: AllProposalsProps) {
   const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
   const [searchTerm, setSearchTerm] = useState('');
+  const { data: proposalData } = useProposalInfo();
+  console.log("ProposalData::", proposalData);
+  const { data: bestNumber } = useBestNumber();
+  console.log('bestNumber::',bestNumber);
+  const { data: referendumData } = useReferendumInfo();
+
+  let proposals = proposalData ? proposalData.map(p => {
+      const schedulingCycleDays = 28;
+      const daysSinceLastSchedule = Math.floor(Math.random() * schedulingCycleDays);
+      const daysUntilNextSchedule = schedulingCycleDays - daysSinceLastSchedule;
+      return {
+        id: p.idx,
+        title: p.title,
+        status: p.status, /// TODO update this
+        track: TRACK_OPTIONS[Math.floor(Math.random() * (TRACK_OPTIONS.length - 1)) + 1], /// TODO update this
+        aye: Math.floor(Math.random() * 100), /// TODO update this
+        nay: Math.floor(Math.random() * 100), /// TODO update this
+        daysLeft: daysUntilNextSchedule || p.seconds.toString(), // TODO update this
+        proposer: p.proposer.toString(),
+        summary: p.summary,
+        description: p.description,
+        proposerAvatar: leftIcon,
+        link: p.link,
+        preimage: p.preimage
+      }
+  }) : [];
+
+  proposals = referendumData && referendumData.length ? proposals.filter(p => referendumData.some(r=> r.idx !== p.id)) : proposals;
+  console.log('proposals::',proposals);
+  const referendums = referendumData ? referendumData.map(p => {
+    const ayeVotes = p.voteCountAye;
+    const nayVotes = p.voteCountNay;
+    const totalVotes = ayeVotes + nayVotes;
+    const ayePercentage = Math.round((ayeVotes / totalVotes) * 100) || 0;
+    const nayPercentage = 100 - ayePercentage;
+    const { status, votedAye, votedNay, votedTotal } = p;
+    // const { changeAye, changeNay } = status && votedAye && votedNay ? useChangeCalc(status.threshold, votedAye, votedNay, votedTotal) : {changeAye: 0, changeNay: 0};
+    // const threshold = useMemo(
+    //     () => status.threshold.type.toString().replace('majority', ' majority '),
+    //     [status]
+    // );
+    const totalCalculated = votedAye.add(votedNay);
+
+
+    return {
+      id: p.refIdx,
+      pId: p.idx,
+      title: p.title,
+      status: status,
+      track: TRACK_OPTIONS[Math.floor(Math.random() * (TRACK_OPTIONS.length - 1)) + 1],
+      proposer: p?.proposer?.toString(),
+      proposerAvatar: leftIcon,
+      ayeVotes: ayeVotes,
+      nayVotes: nayVotes,
+      ayePercentage,
+      nayPercentage,
+      conviction: Math.floor(Math.random() * 6) + 1, // TODO update this (Democracy.votingOf - storage - its per account)
+      votingPeriodHours: 1000, // TODO update this
+      // remainBlock: remainBlock,
+      // enactBlock: enactBlock,
+      enactmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(), // TODO update this 30-day enactment delay
+      // Enactment date is time from proposal approval to actual execution. (end + delay) (democracy.referendumInfoOf)
+      submittedDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleDateString(), /// TODO update this
+      // No chain storage for this one.
+      bondedAmount: `${p?.tally?.turnout || 0} ROOT` /// TODO update this
+    }
+  }) : [];
 
   // Update active tab when defaultTab prop changes
   useEffect(() => {
     setActiveTab(defaultTab);
   }, [defaultTab]);
+
   const [sortBy, setSortBy] = useState('Popular');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState('All Tracks');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
 
-  const filteredProposals = allProposals.filter((proposal) => {
+  const filteredProposals = proposals.filter((proposal) => {
     // Search filter
     const matchesSearch = proposal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       proposal.id.includes(searchTerm) ||
@@ -152,9 +150,9 @@ export function AllProposals({ onNavigate, onSelectProposal, defaultTab = 'propo
     return matchesSearch && matchesTrack && matchesStatus;
   });
 
-  const filteredReferendums = allReferendums.filter((referendum) => {
+  const filteredReferendums = referendums.filter((referendum) => {
     // Search filter
-    const matchesSearch = referendum.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = referendum?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
       referendum.id.includes(searchTerm) ||
       referendum.proposer.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -208,14 +206,14 @@ export function AllProposals({ onNavigate, onSelectProposal, defaultTab = 'propo
   ].filter(Boolean).length;
 
   // Helper function to format time remaining
-  const formatTimeRemaining = (hours: number) => {
-    if (hours < 24) {
-      return `${hours}h`;
-    }
-    const days = Math.floor(hours / 24);
-    const remainingHours = hours % 24;
-    return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
-  };
+  // const formatTimeRemaining = (hours: number) => {
+  //   if (hours < 24) {
+  //     return `${hours}h`;
+  //   }
+  //   const days = Math.floor(hours / 24);
+  //   const remainingHours = hours % 24;
+  //   return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+  // };
 
   // Get appropriate status options based on active tab
   const getStatusOptions = () => {
@@ -223,79 +221,79 @@ export function AllProposals({ onNavigate, onSelectProposal, defaultTab = 'propo
   };
 
   // Referendum Card Component - Consistent with ProposalCard design
-  const ReferendumCard = ({ referendum, onSelect }: { referendum: Referendum, onSelect: () => void }) => {
-    const getTrackColor = () /*(track: string)*/ => {
-      return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-    };
-
-    return (
-      <motion.div
-        className="bg-card rounded-xl p-5 shadow-elevation-sm border border-border cursor-pointer"
-        onClick={onSelect}
-        whileHover={{
-          scale: 1.005,
-          borderColor: 'rgba(255, 255, 255, 0.6)'
-        }}
-        whileTap={{ scale: 0.995 }}
-        transition={{ duration: 0.15, ease: "easeOut" }}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="space-y-4">
-          {/* Header with badges and meta info */}
-          <div className="flex items-start justify-between">
-            <div className="flex gap-3">
-              <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getStatusBadgeClass(referendum.status)}`}>
-                {referendum.status}
-              </Badge>
-              {/*<Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getTrackColor(referendum.track)}`}>*/}
-              <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getTrackColor()}`}>
-                {referendum.track}
-              </Badge>
-            </div>
-            <div className="hidden sm:block text-xs text-foreground font-medium">
-              {referendum.status === 'Active' && referendum.votingPeriodHours > 0 && `${formatTimeRemaining(referendum.votingPeriodHours)} left`}
-              {referendum.status === 'Cancelled' && 'Cancelled by Council'}
-              {referendum.status !== 'Active' && referendum.status !== 'Cancelled' && ''} | #{referendum.id}
-            </div>
-          </div>
-
-          {/* Title */}
-          <h4 className="text-foreground">{referendum.title}</h4>
-
-          {/* Vote breakdown and proposer - Only show for non-cancelled */}
-          {referendum.status !== 'Cancelled' && (
-            <div className="flex items-start justify-between">
-              <div className="flex gap-1">
-                <div className="flex items-center gap-1">
-                  <ArrowUp size={16} className="text-green-400" />
-                  <span className="text-xs text-foreground font-medium">{referendum.ayePercentage}% Aye</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <ArrowDown size={16} className="text-red-400" />
-                  <span className="text-xs text-foreground font-medium">{referendum.nayPercentage}% Nay</span>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div
-                  className="w-5 h-5 rounded-full bg-cover bg-center"
-                  style={{ backgroundImage: `url(${referendum.proposerAvatar})` }}
-                />
-                <span className="text-xs text-foreground font-medium">{referendum.proposer}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Cancelled referendum info */}
-          {referendum.status === 'Cancelled' && (
-            <div className="bg-gray-500/10 rounded-lg p-3 border border-gray-500/20">
-              <p className="text-xs text-gray-400">This referendum was cancelled by council vote</p>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    );
-  };
+  // const ReferendumCard = ({ referendum, onSelect }: { referendum: ReferendumInt, onSelect: () => void }) => {
+  //   const getTrackColor = () /*(track: string)*/ => {
+  //     return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+  //   };
+  //
+  //   return (
+  //     <motion.div
+  //       className="bg-card rounded-xl p-5 shadow-elevation-sm border border-border cursor-pointer"
+  //       onClick={onSelect}
+  //       whileHover={{
+  //         scale: 1.005,
+  //         borderColor: 'rgba(255, 255, 255, 0.6)'
+  //       }}
+  //       whileTap={{ scale: 0.995 }}
+  //       transition={{ duration: 0.15, ease: "easeOut" }}
+  //       initial={{ opacity: 0, y: 8 }}
+  //       animate={{ opacity: 1, y: 0 }}
+  //     >
+  //       <div className="space-y-4">
+  //         {/* Header with badges and meta info */}
+  //         <div className="flex items-start justify-between">
+  //           <div className="flex gap-3">
+  //             <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getStatusBadgeClass(referendum.status)}`}>
+  //               {referendum.status}
+  //             </Badge>
+  //             {/*<Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getTrackColor(referendum.track)}`}>*/}
+  //             <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getTrackColor()}`}>
+  //               {referendum.track}
+  //             </Badge>
+  //           </div>
+  //           <div className="hidden sm:block text-xs text-foreground font-medium">
+  //             {referendum.status === 'Active' && referendum.votingPeriodHours > 0 && `${formatTimeRemaining(referendum.votingPeriodHours)} left`}
+  //             {referendum.status === 'Cancelled' && 'Cancelled by Council'}
+  //             {referendum.status !== 'Active' && referendum.status !== 'Cancelled' && ''} | #{referendum.id}
+  //           </div>
+  //         </div>
+  //
+  //         {/* Title */}
+  //         <h4 className="text-foreground">{referendum.title}</h4>
+  //
+  //         {/* Vote breakdown and proposer - Only show for non-cancelled */}
+  //         {referendum.status !== 'Cancelled' && (
+  //           <div className="flex items-start justify-between">
+  //             <div className="flex gap-1">
+  //               <div className="flex items-center gap-1">
+  //                 <ArrowUp size={16} className="text-green-400" />
+  //                 <span className="text-xs text-foreground font-medium">{referendum.ayePercentage}% Aye</span>
+  //               </div>
+  //               <div className="flex items-center gap-1">
+  //                 <ArrowDown size={16} className="text-red-400" />
+  //                 <span className="text-xs text-foreground font-medium">{referendum.nayPercentage}% Nay</span>
+  //               </div>
+  //             </div>
+  //             <div className="flex items-start gap-3">
+  //               <div
+  //                 className="w-5 h-5 rounded-full bg-cover bg-center"
+  //                 style={{ backgroundImage: `url(${referendum.proposerAvatar})` }}
+  //               />
+  //               <span className="text-xs text-foreground font-medium">{referendum.proposer}</span>
+  //             </div>
+  //           </div>
+  //         )}
+  //
+  //         {/* Cancelled referendum info */}
+  //         {referendum.status === 'Cancelled' && (
+  //           <div className="bg-gray-500/10 rounded-lg p-3 border border-gray-500/20">
+  //             <p className="text-xs text-gray-400">This referendum was cancelled by council vote</p>
+  //           </div>
+  //         )}
+  //       </div>
+  //     </motion.div>
+  //   );
+  // };
 
   return (
     <div className="space-y-6">
@@ -529,20 +527,30 @@ export function AllProposals({ onNavigate, onSelectProposal, defaultTab = 'propo
                   key={proposal.id}
                   proposal={proposal}
                   onSelect={() => {
-                    onSelectProposal(proposal.id);
+                    onSelectProposalId(proposal.id);
+                    onSelectProposal(proposal)
                     onNavigate('proposal-detail');
                   }}
                 />
               ))
             : paginatedData.map((referendum: any) => (
-                <ReferendumCard
-                  key={referendum.id}
-                  referendum={referendum}
-                  onSelect={() => {
-                    onSelectProposal(referendum.id);
-                    onNavigate('referendum-detail');
-                  }}
-                />
+                // <ReferendumCard
+                //   key={referendum.id}
+                //   referendum={referendum}
+                //   onSelect={() => {
+                //     onSelectProposal(referendum.id);
+                //     onNavigate('referendum-detail');
+                //   }}
+                // />
+                  <Referendum
+                      key={referendum.id}
+                      referendum={referendum}
+                      onSelect={() => {
+                        onSelectProposalId(referendum.id);
+                        onSelectProposal(referendum.id);
+                        onNavigate('referendum-detail');
+                      }}
+                  />
               ))
           }
         </div>

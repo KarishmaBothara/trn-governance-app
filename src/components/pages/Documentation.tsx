@@ -12,11 +12,16 @@ export function Documentation() {
                 <Info className="w-8 h-8 text-primary" />
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-center gap-2">
                 <h2 className="text-foreground">Documentation</h2>
+                <a
+                    href="https://docs.therootnetwork.com"
+                    target="_blank"
+                >
                 <ExternalLink className="w-5 h-5 text-muted-foreground" />
+                </a>
               </div>
               <p className="text-muted-foreground">
                 This section will link to external documentation and guides for using ROOT Network governance and development resources.

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c1234028-2ef7-4761-afb3-8d55058a6a2e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/generated/prisma/edge.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/edge.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/index-browser.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/index-browser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/index.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/index.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/runtime/edge-esm.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/runtime/edge-esm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/runtime/edge.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/runtime/edge.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/runtime/library.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/runtime/library.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/runtime/react-native.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/runtime/react-native.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/runtime/wasm-compiler-edge.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/runtime/wasm-compiler-edge.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/runtime/wasm-engine-edge.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/runtime/wasm-engine-edge.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/schema.prisma" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generated/prisma/wasm.js" beforeDir="false" afterPath="$PROJECT_DIR$/generated/prisma/wasm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prisma/schema.prisma" beforeDir="false" afterPath="$PROJECT_DIR$/prisma/schema.prisma" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/BecomeADelegateModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/BecomeADelegateModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/DelegateDetailModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/DelegateDetailModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/DelegateVotingModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/DelegateVotingModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ProposalCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ProposalCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/VotingHistoryModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/VotingHistoryModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/council/CancellationMotionCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/council/CancellationMotionCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/council/MotionCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/council/MotionCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/council/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/council/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/AllProposals.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/AllProposals.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/Council.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/Council.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/Delegate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/Delegate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/Documentation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/Documentation.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/Elections.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/Elections.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/GovernanceHub.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/GovernanceHub.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/MotionDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/MotionDetail.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/ProposalDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/ProposalDetail.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/ReferendumDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/ReferendumDetail.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/Staking.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/Staking.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/pages/SubmitProposal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/pages/SubmitProposal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/context/QueryProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/QueryProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/hooks/useProposal.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/useProposal.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="3l1n4e7p" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="328N9JpxWChLByDlmpmRa8JlGPO" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
+    <option name="autoscrollToSource" value="true" />
+    <option name="foldersAlwaysOnTop" value="false" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="sortByType" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "last_opened_file_path": "/Users/karishma/work/trn-governance-app/src/hooks",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "/Users/karishma/work/trn-governance-app/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/hooks" />
+      <recent name="$PROJECT_DIR$/src/app/api/vote" />
+      <recent name="$PROJECT_DIR$/src/app/api" />
+      <recent name="$PROJECT_DIR$/src/components/pages" />
+      <recent name="$PROJECT_DIR$/src/pages/api" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/hooks" />
+      <recent name="$PROJECT_DIR$/src/app" />
+      <recent name="$PROJECT_DIR$/src/components/ui" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c1234028-2ef7-4761-afb3-8d55058a6a2e" name="Changes" comment="" />
+      <created>1756798087929</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1756798087929</updated>
+      <workItem from="1756798090628" duration="27532000" />
+      <workItem from="1756882413602" duration="16752000" />
+      <workItem from="1756962531998" duration="7596000" />
+      <workItem from="1756970630874" duration="20082000" />
+      <workItem from="1757047204391" duration="10011000" />
+      <workItem from="1757303969195" duration="38873000" />
+      <workItem from="1757486449385" duration="25185000" />
+      <workItem from="1757652246201" duration="5023000" />
+      <workItem from="1757915084181" duration="18265000" />
+      <workItem from="1757990356404" duration="560000" />
+      <workItem from="1757997523597" duration="583000" />
+      <workItem from="1758005873438" duration="8869000" />
+      <workItem from="1758016667245" duration="28024000" />
+      <workItem from="1758106824232" duration="1381000" />
+      <workItem from="1758109761206" duration="41078000" />
+      <workItem from="1758364043534" duration="2187000" />
+      <workItem from="1758509403344" duration="23002000" />
+      <workItem from="1758601360716" duration="13187000" />
+      <workItem from="1759479057416" duration="3279000" />
+      <workItem from="1759719262904" duration="17593000" />
+      <workItem from="1759907767404" duration="20204000" />
+      <workItem from="1760081024098" duration="31031000" />
+      <workItem from="1760352484737" duration="48433000" />
+      <workItem from="1760509215552" duration="32045000" />
+      <workItem from="1760611620456" duration="8720000" />
+      <workItem from="1760639903841" duration="3418000" />
+      <workItem from="1760953832915" duration="36741000" />
+      <workItem from="1761283700318" duration="617000" />
+      <workItem from="1761543851064" duration="4765000" />
+      <workItem from="1761630377519" duration="49394000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/BecomeADelegateModal.tsx</url>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/ui/dialog.tsx</url>
+          <line>2</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/ui/slider.tsx</url>
+          <line>2</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/pages/SubmitProposal.tsx</url>
+          <line>33</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/context/Providers.tsx</url>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/ui/Param/Base.tsx</url>
+          <line>3</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/ui/Param/BasicAccountId20.tsx</url>
+          <line>3</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/TopBar.tsx</url>
+          <line>11</line>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/hooks/useChangeCalc.ts</url>
+          <line>3</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/pages/AllProposals.tsx</url>
+          <line>224</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/council/MotionCard.tsx</url>
+          <line>45</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/src/components/pages/MotionDetail.tsx</url>
+          <line>147</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

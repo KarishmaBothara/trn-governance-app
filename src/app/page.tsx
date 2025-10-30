@@ -65,7 +65,10 @@ const pageTransition = {
 export default function GovernancePage() {
   const [currentPage, setCurrentPage] = useState<NavigationItem>('dashboard');
   const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
+  const [selectedProposal, setSelectedProposal] = useState<string | null>(null);
   const [selectedMotionId, setSelectedMotionId] = useState<string | null>(null);
+  const [selectedMotion, setSelectedMotion] = useState(null);
+  const [isCouncilMember, setIfCouncilMember] = useState(false);
   const [proposalsDefaultTab, setProposalsDefaultTab] = useState<'proposals' | 'referendums'>('proposals');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isVotingSectionVisible, setIsVotingSectionVisible] = useState(false);
@@ -189,6 +192,7 @@ export default function GovernancePage() {
     if (page === 'proposals-referendums') {
       handleNavigateToProposalsReferendums();
     } else {
+      console.log('**************');
       setCurrentPage(page);
       if (page === 'proposals') {
         setProposalsDefaultTab('proposals');
@@ -202,19 +206,19 @@ export default function GovernancePage() {
         return <GovernanceHub onNavigate={handleNavigation} onSelectProposal={setSelectedProposalId} />;
       case 'proposals':
       case 'proposals-referendums':
-        return <AllProposals onNavigate={handleNavigation} onSelectProposal={setSelectedProposalId} defaultTab={proposalsDefaultTab} />;
+        return <AllProposals onNavigate={handleNavigation} onSelectProposalId={setSelectedProposalId} onSelectProposal={setSelectedProposal} defaultTab={proposalsDefaultTab} />;
       case 'delegate':
         return <Delegate onNavigate={handleNavigation} onSelectProposal={setSelectedProposalId} />;
       case 'submit-proposal':
         return <SubmitProposal onNavigate={handleNavigation} />;
       case 'proposal-detail':
-        return <ProposalDetail proposalId={selectedProposalId} onNavigate={handleNavigation} />;
+        return <ProposalDetail proposal={selectedProposal} onNavigate={handleNavigation} />;
       case 'referendum-detail':
         return <ReferendumDetail referendumId={selectedProposalId} onNavigate={handleNavigation} />;
       case 'council':
-        return <Council onNavigate={handleNavigation} onSelectProposal={setSelectedProposalId} onSelectMotion={setSelectedMotionId} />;
+        return <Council onNavigate={handleNavigation} onSelectProposal={setSelectedProposalId} onSelectMotion={setSelectedMotion} setIfCouncilMember={setIfCouncilMember}/>;
       case 'motion-detail':
-        return <MotionDetail motionId={selectedMotionId} onNavigate={handleNavigation} />;
+        return <MotionDetail motion={selectedMotion} isCouncilMember={isCouncilMember} onNavigate={handleNavigation} />;
       case 'elections':
         // return <Elections onNavigate={handleNavigation} />;
         return <Elections />;

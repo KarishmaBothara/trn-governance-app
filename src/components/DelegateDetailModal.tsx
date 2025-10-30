@@ -15,13 +15,13 @@ interface Delegate {
   totalDelegators: number;
   participation: number;
   description: string;
-  socialLinks: {
+  // socialLinks: {
     discord?: string;
     twitter?: string;
     discordHandle?: string;
     twitterHandle?: string;
-  };
-  tracks: string[];
+  // };
+  // tracks: string[];
   votingHistory: Array<{
     proposalId: string;
     title: string;
@@ -53,7 +53,7 @@ export function DelegateDetailModal({ isOpen, onClose, delegate, onDelegate, onN
           Delegate Details for {delegate.name}
         </DialogTitle>
         <DialogDescription className="sr-only">
-          View detailed information about {delegate.name}, including voting history, tracks, and delegation options.
+          View detailed information about {delegate.name}, including voting history and delegation options.
         </DialogDescription>
 
         {/* Header */}
@@ -63,9 +63,9 @@ export function DelegateDetailModal({ isOpen, onClose, delegate, onDelegate, onN
             <p className="text-xs text-muted-foreground">{delegate.address}</p>
           </div>
           <div className="flex items-center gap-4">
-            {delegate.socialLinks.discord && (
+            {delegate.discord && (
               <a
-                href={delegate.socialLinks.discord}
+                href={delegate.discord}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
@@ -73,12 +73,12 @@ export function DelegateDetailModal({ isOpen, onClose, delegate, onDelegate, onN
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d="M20.317 4.37c-1.53-.69-3.17-1.2-4.885-1.47.3.48.65 1.13.89 1.65-1.8-.27-3.54-.27-5.34 0 .24-.52.59-1.17.89-1.65-1.715.27-3.355.78-4.885 1.47-4.4 6.58-5.61 13-5.02 19.34 2.01 1.48 3.96 2.38 5.86 2.96-.47-.64-.89-1.32-1.24-2.03.68.2 1.38.36 2.09.47-.15-.23-.29-.47-.42-.72 1.48.22 2.98.22 4.46 0-.13.25-.27.49-.42.72.71-.11 1.41-.27 2.09-.47-.35.71-.77 1.39-1.24 2.03 1.9-.58 3.85-1.48 5.86-2.96.69-7.36-1.17-13.75-4.94-19.34zm-8.54 15.49c-1.63 0-2.95-1.5-2.95-3.34s1.32-3.34 2.95-3.34 2.95 1.5 2.95 3.34-1.32 3.34-2.95 3.34zm5.54 0c-1.63 0-2.95-1.5-2.95-3.34s1.32-3.34 2.95-3.34 2.95 1.5 2.95 3.34-1.32 3.34-2.95 3.34z" fill="currentColor"/>
                 </svg>
-                <span className="text-xs">{delegate.socialLinks.discordHandle || 'moonbeam_ambassador'}</span>
+                <span className="text-xs">{delegate.discord || 'moonbeam_ambassador'}</span>
               </a>
             )}
-            {delegate.socialLinks.twitter && (
+            {delegate.twitter && (
               <a
-                href={delegate.socialLinks.twitter}
+                href={delegate.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
@@ -86,7 +86,7 @@ export function DelegateDetailModal({ isOpen, onClose, delegate, onDelegate, onN
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="currentColor"/>
                 </svg>
-                <span className="text-xs">{delegate.socialLinks.twitterHandle || '@moonbeam_ambass'}</span>
+                <span className="text-xs">{delegate.twitter || '@moonbeam_ambass'}</span>
               </a>
             )}
           </div>
@@ -97,11 +97,7 @@ export function DelegateDetailModal({ isOpen, onClose, delegate, onDelegate, onN
           <div className="p-5 space-y-6">
             {/* Description */}
             <p className="text-foreground">
-              Hello, as a Senior Ambassador for the Francophone community of the Moonbeam project for the past two
-              years, I have a deep affection for the Polkadot ecosystem, and I am convinced of its multi-chain and
-              multi-community future. My participation in the delegation program stems from my strong belief in the
-              importance of governance within Moonbeam. Through your delegations, we can ensure together that
-              Moonbeam remains firmly anchored on the path to success.
+              {delegate.description.toLocaleString()}
             </p>
 
             <p className="text-foreground">
@@ -136,17 +132,17 @@ export function DelegateDetailModal({ isOpen, onClose, delegate, onDelegate, onN
               </Card>
             </div>
 
-            {/* Tracks */}
-            <div className="space-y-3">
-              <h3 className="text-foreground font-bold text-2xl">Tracks</h3>
-              <div className="flex flex-wrap gap-3">
-                {delegate.tracks.map((track, index) => (
-                  <Badge key={index} className="bg-blue-500/20 text-blue-400 text-[6px] font-bold uppercase px-1.5 py-0.5">
-                    {track}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+            {/*/!* Tracks *!/*/}
+            {/*<div className="space-y-3">*/}
+            {/*  <h3 className="text-foreground font-bold text-2xl">Tracks</h3>*/}
+            {/*  <div className="flex flex-wrap gap-3">*/}
+            {/*    {delegate.tracks.map((track, index) => (*/}
+            {/*      <Badge key={index} className="bg-blue-500/20 text-blue-400 text-[6px] font-bold uppercase px-1.5 py-0.5">*/}
+            {/*        {track}*/}
+            {/*      </Badge>*/}
+            {/*    ))}*/}
+            {/*  </div>*/}
+            {/*</div>*/}
 
             {/* Voting History */}
             <div className="space-y-4">

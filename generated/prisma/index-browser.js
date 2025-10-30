@@ -20,11 +20,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.16.1
+ * Prisma Client JS version: 6.16.2
  * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
  */
 Prisma.prismaVersion = {
-  client: "6.16.1",
+  client: "6.16.2",
   engine: "1c57fdcd7e44b29b9313256c76699e91c3ac3c43"
 }
 
@@ -115,13 +115,63 @@ Prisma.NullTypes = {
 
 exports.Prisma.ProposalScalarFieldEnum = {
   id: 'id',
+  idx: 'idx',
+  extrinsicId: 'extrinsicId',
   preimage: 'preimage',
   deposit: 'deposit',
   title: 'title',
   summary: 'summary',
   description: 'description',
   link: 'link',
-  successful: 'successful'
+  successful: 'successful',
+  proposer: 'proposer',
+  proposalType: 'proposalType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  hash: 'hash',
+  status: 'status',
+  method: 'method',
+  section: 'section',
+  args: 'args',
+  threshold: 'threshold',
+  ayePercentage: 'ayePercentage',
+  nayPercentage: 'nayPercentage',
+  totalVotes: 'totalVotes'
+};
+
+exports.Prisma.VotesScalarFieldEnum = {
+  id: 'id',
+  refIdx: 'refIdx',
+  pId: 'pId',
+  voter: 'voter',
+  voteAye: 'voteAye',
+  conviction: 'conviction'
+};
+
+exports.Prisma.CouncilScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  address: 'address',
+  backing: 'backing',
+  votes: 'votes',
+  description: 'description',
+  hasDiscord: 'hasDiscord',
+  hasTwitter: 'hasTwitter',
+  twitter: 'twitter',
+  discord: 'discord',
+  verified: 'verified'
+};
+
+exports.Prisma.DelegateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  address: 'address',
+  votingPower: 'votingPower',
+  totalDelegators: 'totalDelegators',
+  participation: 'participation',
+  description: 'description',
+  twitter: 'twitter',
+  discord: 'discord'
 };
 
 exports.Prisma.SortOrder = {
@@ -133,10 +183,24 @@ exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
+exports.ProposalType = exports.$Enums.ProposalType = {
+  Democracy: 'Democracy',
+  CouncilMotion: 'CouncilMotion',
+  CouncilExternalMotion: 'CouncilExternalMotion'
+};
 
+exports.ProposalStatus = exports.$Enums.ProposalStatus = {
+  Cancelled: 'Cancelled',
+  Rejected: 'Rejected',
+  Passed: 'Passed',
+  Processing: 'Processing'
+};
 
 exports.Prisma.ModelName = {
-  Proposal: 'Proposal'
+  Proposal: 'Proposal',
+  Votes: 'Votes',
+  Council: 'Council',
+  Delegate: 'Delegate'
 };
 
 /**

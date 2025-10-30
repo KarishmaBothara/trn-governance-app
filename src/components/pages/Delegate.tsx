@@ -14,6 +14,9 @@ import { ConnectWalletButton } from '../ConnectWalletButton';
 import { toast } from 'sonner';
 import { useUser } from '../UserContext';
 import {NavigationItem} from "@/app/page";
+import { useAuth } from "@futureverse/auth-react";
+import {useDelegates} from "@/hooks/useDelegates";
+import {useCouncilMembers} from "@/hooks/useCouncilMembers";
 
 interface Delegate {
   id: string;
@@ -141,21 +144,25 @@ interface DelegateProps {
 }
 
 export function Delegate({ onNavigate, onSelectProposal }: DelegateProps) {
-  const { isLoggedIn } = useUser();
+  // const { isLoggedIn } = useUser();
+  const { userSession } = useAuth();
+  const eoa = userSession?.eoa;
+  const fpass = userSession?.futurepass;
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('Popular');
   const [selectedDelegate, setSelectedDelegate] = useState<Delegate | null>(null);
   const [showDelegateModal, setShowDelegateModal] = useState(false);
   const [showVotingModal, setShowVotingModal] = useState(false);
   const [showBecomeADelegateModal, setShowBecomeADelegateModal] = useState(false);
-  const [userDelegations, setUserDelegations] = useState<UserDelegation[]>(isLoggedIn ? mockUserDelegations : []);
+  const [userDelegations, setUserDelegations] = useState<UserDelegation[]>(userSession ? mockUserDelegations : []);
   const [revokeModalOpen, setRevokeModalOpen] = useState(false);
   const [selectedDelegationToRevoke, setSelectedDelegationToRevoke] = useState<{delegate: Delegate, delegation: UserDelegation} | null>(null);
+  const { data: delegateInfo } = useDelegates();
 
-  const filteredDelegates = mockDelegates.filter((delegate) =>
+  const filteredDelegates = delegateInfo ? delegateInfo.filter((delegate) =>
     delegate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     delegate.address.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   const handleDelegateClick = (delegate: Delegate) => {
     setSelectedDelegate(delegate);
@@ -392,7 +399,7 @@ export function Delegate({ onNavigate, onSelectProposal }: DelegateProps) {
 
                 {/* Action Buttons */}
                 <div className="flex gap-7">
-                  {isLoggedIn ? (
+                  {userSession ? (
                     getUserDelegation(delegate.id) ? (
                       <>
                         <Button

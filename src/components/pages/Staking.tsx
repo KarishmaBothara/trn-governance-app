@@ -13,20 +13,20 @@ export function Staking() {
                 <Info className="w-8 h-8 text-primary" />
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-center gap-2">
                 <h2 className="text-foreground">Staking</h2>
+                <a
+                    href="https://staking.therootnetwork.com"
+                    target="_blank"
+                >
                 <ExternalLink className="w-5 h-5 text-muted-foreground" />
+                </a>
               </div>
-              <p className="text-muted-foreground">
-                This section will link to an external staking platform where you can stake your <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3"><Root /></span></span> tokens and earn rewards.
-              </p>
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Coming soon - external link
-            </p>
+
           </div>
         </CardContent>
       </Card>

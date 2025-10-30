@@ -5,6 +5,7 @@ import { Card, CardContent } from '../ui/card';
 import { Clock } from 'lucide-react';
 import { CancellationMotion, CancellationVote, CancellationVoteType } from './types';
 import { NavigationItem } from "@/app/page";
+import {truncateAddress} from "@/lib/utils";
 
 interface CancellationMotionCardProps {
   motion: CancellationMotion;
@@ -95,10 +96,10 @@ export function CancellationMotionCard({ motion, userVotes, onVote, isCouncilMem
           <div className="flex items-center gap-3">
             <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getStatusBadgeClass()}`}>
               {motion.status === 'active' ? 'Cancellation Motion' :
-               motion.status === 'passed' ? 'Cancelled' : 'Motion Failed'}
+               motion.status.toLowerCase() === 'passed' ? 'Passed' : 'Motion Failed'}
             </Badge>
             <Badge className="bg-chart-2/20 text-chart-2 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded">
-              Referendum
+              {motion.title.length> 30 ? truncateAddress(motion.title, 20, 20).substring(2) : motion.title}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
@@ -111,7 +112,7 @@ export function CancellationMotionCard({ motion, userVotes, onVote, isCouncilMem
               </div>
             )}
             <span className="text-xs text-muted-foreground">
-              #{motion.referendumId}
+              #{motion.idx}
             </span>
           </div>
         </div>
@@ -127,7 +128,7 @@ export function CancellationMotionCard({ motion, userVotes, onVote, isCouncilMem
           <div className="flex w-full h-1.5 rounded-full overflow-hidden bg-border">
             <div
               className="bg-red-400 transition-all duration-200"
-              style={{ width: `${(motion.votesFor / motion.requiredVotes) * 100}%` }}
+              style={{ width: `${(motion.totalVotes / motion.threshold) * 100}%` }}
             />
           </div>
 
@@ -135,16 +136,17 @@ export function CancellationMotionCard({ motion, userVotes, onVote, isCouncilMem
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-xs text-muted-foreground font-bold">
-                {motion.votesFor} / {motion.requiredVotes} votes to cancel
+                {motion.totalVotes}/{motion.threshold}
+                {/*{motion.votesFor} / {motion.requiredVotes} votes to cancel*/}
               </span>
               <span className="text-xs text-muted-foreground">
-                ({motion.votesAgainst} against)
+                {motion.summary}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">Proposed by:</span>
               <span className="text-xs text-muted-foreground font-bold">
-                {motion.proposer.name}
+                {motion.proposer}
               </span>
             </div>
           </div>
@@ -180,9 +182,9 @@ export function CancellationMotionCard({ motion, userVotes, onVote, isCouncilMem
         {motion.status !== 'active' && (
           <div className="bg-muted/20 rounded-lg p-3">
             <div className="text-sm text-muted-foreground">
-              {motion.status === 'passed'
-                ? `Motion passed with ${motion.votesFor} votes. Referendum has been cancelled.`
-                : `Motion failed with only ${motion.votesFor} votes (required ${motion.requiredVotes}). Referendum continues.`
+              {motion.status.toLowerCase() === 'passed'
+                ? `Motion passed with ${motion.totalVotes} votes.`
+                : `Motion failed with only ${motion.totalVotes} votes (required ${motion.threshold}).`
               }
             </div>
           </div>

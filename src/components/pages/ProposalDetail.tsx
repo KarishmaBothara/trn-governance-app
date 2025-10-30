@@ -13,46 +13,52 @@ import { toast } from 'sonner';
 import { useUser } from '../UserContext';
 import { mockCancellationMotions } from '../council/mockData';
 import { CancellationMotion } from '../council/types';
+import { Proposal } from "@/components/ProposalCard";
+// import {useProposalInfoFromId} from "@/hooks/useProposalInfoFromId";
+// import {useProposalInfo} from "@/hooks/useProposal";
 
 interface ProposalDetailProps {
-  proposalId: string | null;
+  proposal: Proposal  | null;
   onNavigate: (page: NavigationItem) => void;
 }
 
-export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) {
+export function ProposalDetail({ proposal, onNavigate }: ProposalDetailProps) {
+  console.log("Proposal detail::", proposal);
   const { isLoggedIn, isCouncilMember } = useUser();
+  // const { data: proposal } = useProposalInfoFromId(proposalId);
+  console.log("proposal::",proposal);
   const [voteDirection, setVoteDirection] = useState<'aye' | 'nay' | null>('aye');
   // const [stakeAmount, setStakeAmount] = useState([200]);
   const [rootAmount, setRootAmount] = useState('200');
   const [conviction, setConviction] = useState([2]);
   const [showVotingHistory, setShowVotingHistory] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancellationMotion, setCancellationMotion] = useState<CancellationMotion | null>(null);
+  // const [cancellationMotion, setCancellationMotion] = useState<CancellationMotion | null>(null);
   // const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [, setTimeRemaining] = useState<string>('');
   // Check if there's an active cancellation motion for this proposal
-  useEffect(() => {
-    const motion = mockCancellationMotions.find(
-      m => m.referendumId === proposalId && (m.status === 'active' || m.status === 'passed')
-    );
-    setCancellationMotion(motion || null);
-  }, [proposalId]);
+  // useEffect(() => {
+  //   const motion = mockCancellationMotions.find(
+  //     m => m.referendumId === proposalId && (m.status === 'active' || m.status === 'passed')
+  //   );
+  //   setCancellationMotion(motion || null);
+  // }, [proposalId]);
 
   // Mock proposal data - status depends on cancellation motion result
-  const proposal = {
-    id: proposalId,
-    title: 'Treasury Proposal: Marketing Campaign Q4',
-    status: cancellationMotion?.status === 'passed' ? 'Cancelled' : 'Active',
-    track: 'Treasury',
-    proposer: 'FV Seona',
-    daysLeft: Math.floor(Math.random() * 28) + 1, // Random days left in 28-day period
-    ayePercentage: 73,
-    nayPercentage: 27,
-    ayeVotes: 3200000,
-    nayVotes: 1180000,
-    enactmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 30-day enactment delay
-    bondedAmount: '100 ROOT'
-  };
+  // const proposal = {
+  //   id: proposalId,
+  //   title: 'Treasury Proposal: Marketing Campaign Q4',
+  //   status: cancellationMotion?.status === 'passed' ? 'Cancelled' : 'Active',
+  //   track: 'Treasury',
+  //   proposer: 'FV Seona',
+  //   daysLeft: Math.floor(Math.random() * 28) + 1, // Random days left in 28-day period
+  //   ayePercentage: 73,
+  //   nayPercentage: 27,
+  //   ayeVotes: 3200000,
+  //   nayVotes: 1180000,
+  //   enactmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 30-day enactment delay
+  //   bondedAmount: '100 ROOT'
+  // };
 
   // Mock existing vote data - null if proposal is cancelled
   const [existingVote, setExistingVote] = useState<{
@@ -60,7 +66,7 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
     amount: string;
     conviction: number;
     votingPower: number;
-  } | null>(proposal.status === 'Cancelled' ? null : {
+  } | null>(  {
     direction: 'aye',
     amount: '150',
     conviction: 1,
@@ -68,42 +74,42 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
   });
 
   // Countdown timer for cancellation motion
-  useEffect(() => {
-    if (!cancellationMotion || cancellationMotion.status !== 'active' || cancellationMotion.remainingTimeMs <= 0) {
-      setTimeRemaining('');
-      return;
-    }
-
-    const updateTimer = () => {
-      const remaining = cancellationMotion.remainingTimeMs;
-
-      if (remaining <= 0) {
-        setTimeRemaining('Expired');
-        return;
-      }
-
-      const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-      if (days > 0) {
-        setTimeRemaining(`${days}d ${hours}h`);
-      } else if (hours > 0) {
-        setTimeRemaining(`${hours}h`);
-      } else {
-        const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-        if (minutes > 0) {
-          setTimeRemaining(`${minutes}m`);
-        } else {
-          setTimeRemaining('< 1m');
-        }
-      }
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 60000);
-
-    return () => clearInterval(interval);
-  }, [cancellationMotion]);
+  // useEffect(() => {
+  //   if (!cancellationMotion || cancellationMotion.status !== 'active' || cancellationMotion.remainingTimeMs <= 0) {
+  //     setTimeRemaining('');
+  //     return;
+  //   }
+  //
+  //   const updateTimer = () => {
+  //     const remaining = cancellationMotion.remainingTimeMs;
+  //
+  //     if (remaining <= 0) {
+  //       setTimeRemaining('Expired');
+  //       return;
+  //     }
+  //
+  //     const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+  //     const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  //
+  //     if (days > 0) {
+  //       setTimeRemaining(`${days}d ${hours}h`);
+  //     } else if (hours > 0) {
+  //       setTimeRemaining(`${hours}h`);
+  //     } else {
+  //       const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+  //       if (minutes > 0) {
+  //         setTimeRemaining(`${minutes}m`);
+  //       } else {
+  //         setTimeRemaining('< 1m');
+  //       }
+  //     }
+  //   };
+  //
+  //   updateTimer();
+  //   const interval = setInterval(updateTimer, 60000);
+  //
+  //   return () => clearInterval(interval);
+  // }, [cancellationMotion]);
 
   // Initialize form with existing vote data when component loads
   React.useEffect(() => {
@@ -116,7 +122,7 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
 
   const handleVoteSubmit = () => {
     // Don't allow voting on cancelled proposals
-    if (proposal.status === 'Cancelled') {
+    if (proposal?.status === 'Cancelled') {
       toast.error('Cannot vote on a cancelled proposal');
       return;
     }
@@ -183,29 +189,29 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
     );
   };
 
-  const handleCancelProposal = () => {
-    // Simulate proposing cancellation motion
-    const newMotion: CancellationMotion = {
-      id: `cancel-${Date.now()}`,
-      referendumId: proposalId!,
-      referendumTitle: proposal.title,
-      proposer: { id: 'current-user', name: 'Current User' } as any,
-      status: 'active',
-      votesFor: 1, // Proposer's vote
-      votesAgainst: 0,
-      totalMembers: 5,
-      requiredVotes: Math.ceil((5 * 2) / 3), // 2/3 majority
-      remainingTimeMs: 5 * 24 * 60 * 60 * 1000, // 5 days
-      submittedDate: new Date().toLocaleDateString()
-    };
+  // const handleCancelProposal = () => {
+  //   // Simulate proposing cancellation motion
+  //   const newMotion: CancellationMotion = {
+  //     id: `cancel-${Date.now()}`,
+  //     referendumId: proposalId!,
+  //     referendumTitle: proposal?.title,
+  //     proposer: { id: 'current-user', name: 'Current User' } as any,
+  //     status: 'active',
+  //     votesFor: 1, // Proposer's vote
+  //     votesAgainst: 0,
+  //     totalMembers: 5,
+  //     requiredVotes: Math.ceil((5 * 2) / 3), // 2/3 majority
+  //     remainingTimeMs: 5 * 24 * 60 * 60 * 1000, // 5 days
+  //     submittedDate: new Date().toLocaleDateString()
+  //   };
+  //
+  //   setCancellationMotion(newMotion);
+  //   setShowCancelModal(false);
+  //
+  //   toast.success('Cancellation motion proposed successfully! Council members can now vote.');
+  // };
 
-    setCancellationMotion(newMotion);
-    setShowCancelModal(false);
-
-    toast.success('Cancellation motion proposed successfully! Council members can now vote.');
-  };
-
-  if (!proposalId) {
+  if (!proposal) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">No proposal selected</p>
@@ -244,7 +250,7 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
 
       {/* Title */}
       <h1 className="text-foreground text-4xl font-bold">
-        {proposal.title}
+        {proposal?.title}
       </h1>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -252,7 +258,7 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
         <div className="xl:col-span-2 space-y-6">
 
           {/* Cancellation Result Banner for Cancelled Proposals */}
-          {proposal.status === 'Cancelled' && (
+          {proposal?.status === 'Cancelled' && (
             <div className="bg-gray-500/10 border-2 border-gray-500/20 rounded-2xl p-4">
               <div className="flex items-start gap-3">
                 <X size={20} className="text-gray-400 mt-0.5 flex-shrink-0" />
@@ -261,11 +267,11 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
                   <p className="text-foreground text-sm">
                     This proposal has been cancelled by council vote. Voting is now closed and the proposal will not proceed to referendum.
                   </p>
-                  {cancellationMotion && (
-                    <div className="text-xs text-muted-foreground">
-                      Cancelled with {cancellationMotion.votesFor} out of {cancellationMotion.requiredVotes} required council votes
-                    </div>
-                  )}
+                  {/*{cancellationMotion && (*/}
+                  {/*  <div className="text-xs text-muted-foreground">*/}
+                  {/*    Cancelled with {cancellationMotion.votesFor} out of {cancellationMotion.requiredVotes} required council votes*/}
+                  {/*  </div>*/}
+                  {/*)}*/}
                 </div>
               </div>
             </div>
@@ -277,18 +283,18 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
               {/* Header with meta info */}
               <div className="flex items-start justify-between border-b border-border pb-6">
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs text-foreground font-bold">{proposal.proposer}</span>
+                  <span className="text-xs text-foreground font-bold">{proposal?.proposer}</span>
                   <span className="text-xs text-muted-foreground">
-                    {proposal.status === 'Cancelled' ? 'Cancelled by Council' : `${proposal.daysLeft} days left`} | #{proposal.id}
+                    Preimage - {proposal.preimage}  #{proposal?.id}
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getStatusBadgeClass(proposal.status)}`}>
-                    {proposal.status}
+                  <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getStatusBadgeClass(proposal?.status)}`}>
+                    {proposal?.status}
                   </Badge>
-                  <Badge className="bg-chart-3/20 text-chart-3 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded">
-                    {proposal.track}
-                  </Badge>
+                  {/*<Badge className="bg-chart-3/20 text-chart-3 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded">*/}
+                  {/*  {proposal?.track}*/}
+                  {/*</Badge>*/}
                 </div>
               </div>
 
@@ -297,7 +303,7 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
                 <div>
                   <h2 className="text-xl font-bold mb-4">TL;DR</h2>
                   <p className="text-base text-foreground">
-                    This treasury proposal requests funding for a comprehensive marketing campaign for Q4, focusing on increasing brand awareness and user acquisition across multiple channels.
+                    {proposal?.description}
                   </p>
                 </div>
 
@@ -305,31 +311,22 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
                   <h2 className="text-xl font-bold mb-4">Summary</h2>
                   <div className="space-y-4 text-base text-foreground">
                     <p>
-                      The proposed marketing campaign aims to expand Root Networks reach and drive community growth through:
-                    </p>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>Digital advertising across major social media platforms</li>
-                      <li>Content marketing and educational resources</li>
-                      <li>Conference sponsorships and speaking opportunities</li>
-                      <li>Community incentive programs and ambassador initiatives</li>
-                    </ul>
-                    <p>
-                      Total requested budget: 500,000 ROOT over 3 months, with detailed milestone-based delivery schedule.
+                      {proposal?.summary}
                     </p>
                   </div>
                 </div>
 
-                <div>
-                  <h2 className="text-xl font-bold mb-4">Implementation Details</h2>
-                  <div className="space-y-4 text-base text-foreground">
-                    <p>
-                      The campaign will be executed in three phases, each with specific deliverables and success metrics.
-                    </p>
-                    <p>
-                      Phase 1 focuses on brand awareness, Phase 2 on community building, and Phase 3 on conversion optimization.
-                    </p>
-                  </div>
-                </div>
+                {/*<div>*/}
+                {/*  <h2 className="text-xl font-bold mb-4">Implementation Details</h2>*/}
+                {/*  <div className="space-y-4 text-base text-foreground">*/}
+                {/*    <p>*/}
+                {/*      The campaign will be executed in three phases, each with specific deliverables and success metrics.*/}
+                {/*    </p>*/}
+                {/*    <p>*/}
+                {/*      Phase 1 focuses on brand awareness, Phase 2 on community building, and Phase 3 on conversion optimization.*/}
+                {/*    </p>*/}
+                {/*  </div>*/}
+                {/*</div>*/}
 
                 <div className="bg-secondary rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -337,12 +334,12 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
                     <span className="text-sm text-muted-foreground">External Links</span>
                   </div>
                   <div className="space-y-1">
-                    <a href="#" className="text-sm text-primary hover:underline block">
+                    <a href={proposal?.link} className="text-sm text-primary hover:underline block">
                       View full proposal document
                     </a>
-                    <a href="#" className="text-sm text-primary hover:underline block">
-                      Budget breakdown spreadsheet
-                    </a>
+                    {/*<a href="#" className="text-sm text-primary hover:underline block">*/}
+                    {/*  Budget breakdown spreadsheet*/}
+                    {/*</a>*/}
                   </div>
                 </div>
               </div>
@@ -353,56 +350,56 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Votes Card */}
-          <div className="bg-card rounded-2xl p-5">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Votes</h2>
-                <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getStatusBadgeClass(proposal.status)}`}>
-                  {proposal.status}
-                </Badge>
-              </div>
+          {/*<div className="bg-card rounded-2xl p-5">*/}
+          {/*  <div className="space-y-6">*/}
+          {/*    <div className="flex items-center justify-between">*/}
+          {/*      <h2 className="text-xl font-bold">Votes</h2>*/}
+          {/*      <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getStatusBadgeClass(proposal?.status)}`}>*/}
+          {/*        {proposal?.status}*/}
+          {/*      </Badge>*/}
+          {/*    </div>*/}
 
               {/* Vote progress - Only show if not cancelled */}
-              {proposal.status !== 'Cancelled' && (
-                <div className="space-y-3">
-                  <div className="flex w-full h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-green-400" style={{ width: `${proposal.ayePercentage}%` }} />
-                    <div className="bg-red-400" style={{ width: `${proposal.nayPercentage}%` }} />
-                  </div>
-                  <div className="flex justify-between">
-                    <div className="flex items-center gap-1">
-                      <ArrowUp size={16} className="text-green-400" />
-                      <span className="text-xs text-muted-foreground font-bold">{proposal.ayePercentage}% Aye</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <ArrowDown size={16} className="text-red-400" />
-                      <span className="text-xs text-muted-foreground font-bold">{proposal.nayPercentage}% Nay</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/*{proposal?.status !== 'Cancelled' && (*/}
+              {/*  <div className="space-y-3">*/}
+              {/*    <div className="flex w-full h-1.5 rounded-full overflow-hidden">*/}
+              {/*      <div className="bg-green-400" style={{ width: `${proposal?.ayePercentage}%` }} />*/}
+              {/*      <div className="bg-red-400" style={{ width: `${proposal?.nayPercentage}%` }} />*/}
+              {/*    </div>*/}
+              {/*    <div className="flex justify-between">*/}
+              {/*      <div className="flex items-center gap-1">*/}
+              {/*        <ArrowUp size={16} className="text-green-400" />*/}
+              {/*        <span className="text-xs text-muted-foreground font-bold">{proposal?.ayePercentage}% Aye</span>*/}
+              {/*      </div>*/}
+              {/*      <div className="flex items-center gap-1">*/}
+              {/*        <ArrowDown size={16} className="text-red-400" />*/}
+              {/*        <span className="text-xs text-muted-foreground font-bold">{proposal?.nayPercentage}% Nay</span>*/}
+              {/*      </div>*/}
+              {/*    </div>*/}
+              {/*  </div>*/}
+              {/*)}*/}
 
               {/* Cancelled proposal message */}
-              {proposal.status === 'Cancelled' && (
-                <div className="bg-gray-500/10 rounded-lg p-3 border border-gray-500/20">
-                  <p className="text-sm text-gray-400 text-center">
-                    Voting was closed when this proposal was cancelled by council vote.
-                  </p>
-                </div>
-              )}
+              {/*{proposal?.status === 'Cancelled' && (*/}
+              {/*  <div className="bg-gray-500/10 rounded-lg p-3 border border-gray-500/20">*/}
+              {/*    <p className="text-sm text-gray-400 text-center">*/}
+              {/*      Voting was closed when this proposal was cancelled by council vote.*/}
+              {/*    </p>*/}
+              {/*  </div>*/}
+              {/*)}*/}
 
-              <Button
-                variant="outline"
-                onClick={() => setShowVotingHistory(true)}
-                className="bg-secondary text-secondary-foreground border-2 border-border rounded-full w-full py-3 hover:bg-secondary/80"
-              >
-                Check votes
-              </Button>
-            </div>
-          </div>
+              {/*<Button*/}
+              {/*  variant="outline"*/}
+              {/*  onClick={() => setShowVotingHistory(true)}*/}
+              {/*  className="bg-secondary text-secondary-foreground border-2 border-border rounded-full w-full py-3 hover:bg-secondary/80"*/}
+              {/*>*/}
+              {/*  Check votes*/}
+              {/*</Button>*/}
+            {/*</div>*/}
+          {/*</div>*/}
 
           {/* Cancel Proposal Button - Council Members Only, Active Proposals Only */}
-          {isCouncilMember && proposal.status === 'Active' && !cancellationMotion && (
+          {isCouncilMember && proposal?.status === 'Active' && !cancellationMotion && (
             <div className="bg-card rounded-2xl p-5">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -425,7 +422,7 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
           )}
 
           {/* Cast Vote Card - Only show if proposal is active (not cancelled) */}
-          {proposal.status === 'Active' && (
+          {proposal?.status === 'Active' && (
             <div id="voting-section" className="bg-card rounded-2xl p-5">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -440,16 +437,16 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
                 </div>
 
                 {/* Warning for pending cancellation */}
-                {cancellationMotion?.status === 'active' && (
-                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-amber-400">
-                        This proposal may be cancelled by council vote. Your vote will remain valid unless cancelled.
-                      </p>
-                    </div>
-                  </div>
-                )}
+                {/*{cancellationMotion?.status === 'active' && (*/}
+                {/*  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">*/}
+                {/*    <div className="flex items-start gap-2">*/}
+                {/*      <AlertTriangle size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />*/}
+                {/*      <p className="text-xs text-amber-400">*/}
+                {/*        This proposal may be cancelled by council vote. Your vote will remain valid unless cancelled.*/}
+                {/*      </p>*/}
+                {/*    </div>*/}
+                {/*  </div>*/}
+                {/*)}*/}
 
                 {/* Current Vote Display */}
                 {existingVote && (
@@ -573,7 +570,7 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
           )}
 
           {/* Cancelled Proposal Notice - Show instead of voting section */}
-          {proposal.status === 'Cancelled' && (
+          {proposal?.status === 'Cancelled' && (
             <div className="bg-card rounded-2xl p-5">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -644,18 +641,18 @@ export function ProposalDetail({ proposalId, onNavigate }: ProposalDetailProps) 
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCancelProposal}
-              className="bg-red-500 text-white hover:bg-red-600"
-            >
-              <AlertTriangle size={16} className="mr-2" />
-              Confirm Cancel Motion
-            </Button>
-          </DialogFooter>
+          {/*<DialogFooter>*/}
+          {/*  <Button variant="outline" onClick={() => setShowCancelModal(false)}>*/}
+          {/*    Cancel*/}
+          {/*  </Button>*/}
+          {/*  <Button*/}
+          {/*    onClick={handleCancelProposal}*/}
+          {/*    className="bg-red-500 text-white hover:bg-red-600"*/}
+          {/*  >*/}
+          {/*    <AlertTriangle size={16} className="mr-2" />*/}
+          {/*    Confirm Cancel Motion*/}
+          {/*  </Button>*/}
+          {/*</DialogFooter>*/}
         </DialogContent>
       </Dialog>
 

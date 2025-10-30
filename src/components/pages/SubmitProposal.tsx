@@ -23,6 +23,8 @@ import { truncateAddress } from "@/lib/utils";
 import { stringToU8a } from '@polkadot/util';
 import { useCustomExtrinsicBuilder } from "@/hooks/useCustomExtrinsicBuilder";
 import { useSigner } from "@/hooks/useSigner";
+import LoadingComponent from "@/components/ui/loading";
+import {ProposalStatus, ProposalType} from "../../../generated/prisma";
 
 interface SubmitProposalProps {
   onNavigate: (page: NavigationItem) => void;
@@ -30,44 +32,32 @@ interface SubmitProposalProps {
 const registry = new TypeRegistry();
 type ProposalStep = 'setup' | 'details' | 'review';
 const proposalTypes = {
-  financial: {
-    label: 'Financial',
-    description: 'Treasury spending, funding requests, financial parameter changes',
+  [ProposalType.Democracy]: {
+    label: 'Democracy',
+    description: 'Democracy proposal can be created by any user',
     tracks: {
-      'treasurer': { label: 'Treasurer', description: 'General treasury proposals' },
-      'big-spender': { label: 'Big Spender', description: 'Large treasury expenditures' },
-      'medium-spender': { label: 'Medium Spender', description: 'Medium treasury expenditures' },
-      'small-spender': { label: 'Small Spender', description: 'Small treasury expenditures' },
+      'FPass': { label: 'FPass', description: 'Use futurepass address' },
+      'EOA': { label: 'EOA', description: 'Use eoa address' },
     },
     deposit: '200 ROOT'
   },
-  technical: {
-    label: 'Technical',
-    description: 'Runtime upgrades, protocol changes, technical implementations',
+  [ProposalType.CouncilMotion]: {
+    label: 'Council Propose Motion',
+    description: 'Council proposal motion can be created by council members only',
     tracks: {
-      'root': { label: 'Root', description: 'Highest privilege level - for critical network changes' },
-      'technical-committee': { label: 'Technical Committee', description: 'Technical committee for protocol upgrades' },
-      'fellowship': { label: 'Fellowship', description: 'Technical fellowship proposals' },
+      'FPass': { label: 'FPass', description: 'Use futurepass address' },
+      'EOA': { label: 'EOA', description: 'Use eoa address' },
     },
-    deposit: '150 ROOT'
+    deposit: '0 ROOT'
   },
-  governance: {
-    label: 'Governance',
-    description: 'Governance parameter changes, voting mechanism updates',
+  [ProposalType.CouncilExternalMotion]: {
+    label: 'Council External Propose Motion',
+    description: 'Council proposal external motion can be created by council members only',
     tracks: {
-      'root': { label: 'Root', description: 'Highest privilege level - for critical network changes' },
-      'governance': { label: 'Governance', description: 'General governance changes' },
+      'FPass': { label: 'FPass', description: 'Use futurepass address' },
+      'EOA': { label: 'EOA', description: 'Use eoa address' },
     },
-    deposit: '250 ROOT'
-  },
-  general: {
-    label: 'General',
-    description: 'Community proposals, non-financial initiatives',
-    tracks: {
-      'root': { label: 'Root', description: 'Highest privilege level - for critical network changes' },
-      'general': { label: 'General', description: 'General community proposals' },
-    },
-    deposit: '100 ROOT'
+    deposit: '0 ROOT'
   },
 };
 
@@ -78,8 +68,8 @@ interface ProposalData {
   details: string;
   discussionLink: string;
   track: string;
-  timing: string;
-  customTiming: string;
+  // timing: string;
+  threshold: string;
   builderMode: 'simple' | 'advanced';
   sectionName: string;
   methodName: string;
@@ -160,9 +150,9 @@ const ZERO_HASH = blake2AsHex('');
 
 function getCallState (fn: SubmittableExtrinsicFunction<'promise'>, values: RawParam[] = []): CallState | any {
   if (!fn) return {extrinsic: null, values: []};
-  console.log("*******************");
-  console.log('values::',values);
-  console.log('fn::',fn);
+  // console.log("*******************");
+  // console.log('values::',values);
+  // console.log('fn::',fn);
   return {
     extrinsic: {
       fn,
@@ -206,14 +196,14 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   });
   const [currentStep, setCurrentStep] = useState<ProposalStep>('setup');
   const [proposalData, setProposalData] = useState<ProposalData>({
-    type: 'financial',
+    type: 'Democracy',
     title: '',
     summary: '',
     details: '',
     discussionLink: '',
     track: '',
-    timing: '',
-    customTiming: '',
+    // timing: '',
+    threshold: '0',
     builderMode: 'simple',
     sectionName: '',
     methodName: '',
@@ -224,9 +214,10 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   const [methodOptions, setMethodOptions] = useState<{label: string, value: string}[]>([]);
   const [paramOptions, setParamsOptions] = useState<{name: string, type: string, typeName: string, value: RawParam}[]>([]);
   const [methodFn, setMethodFn] = useState<SubmittableExtrinsicFunction<'promise'>>(null);
-  const [{ encodedHash, encodedLength, storageFee }, setHash] = useState<HashState>({ encodedHash: ZERO_HASH, encodedLength: '', storageFee: null });
+  const [{ proposalExt, encodedHash, encodedLength, storageFee }, setHash] = useState<HashState>({ proposalExt: null, encodedHash: ZERO_HASH, encodedLength: '', storageFee: null });
   const [{ extrinsic, values }, setDisplay] = useState<CallState>(() => getCallState(methodFn, []));
   const [error, setError] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(false);
   // const _setValues = useCallback(
   //     (values: RawParam[]) => {
   //       console.log("Inside set values::");
@@ -267,6 +258,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       try {
       const { extrinsic } = getCallState(methodFn, values);
 
+      // const proposalExt = extrinsic.fn(...values.map(({ value }) => value));
       const method = extrinsic.fn(...values.map(( value, index ) => {
         const validValue = trnApi.registry.createType(paramOptions[index].type.type, value);
         console.log('validValue:',validValue);
@@ -277,6 +269,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
 
       const encodedLength = Math.ceil((encodedProposal.length - 2) / 2);
       const encodedHash = blake2AsHex(encodedProposal);
+      console.log('encodedHash::',encodedHash);
       const notePreimageTx = trnApi.tx.preimage.notePreimage(encodedProposal);
 
       // we currently don't have a constant exposed, however match to Substrate
@@ -286,7 +279,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
 
       // we currently don't have a constant exposed, however match to Substrate
 
-      setHash({encodedHash: encodedHash, encodedLength, storageFee});
+      setHash({proposalExt: method, encodedHash: encodedHash, encodedLength, storageFee});
       } catch (e) {
         setError(true);
       }
@@ -309,44 +302,32 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   };
 
   const proposalTypes = {
-    financial: {
-      label: 'Financial',
-      description: 'Treasury spending, funding requests, financial parameter changes',
+    Democracy: {
+      label: 'Democracy',
+      description: 'Democracy proposal can be created by any user',
       tracks: {
-        'treasurer': { label: 'Treasurer', description: 'General treasury proposals' },
-        'big-spender': { label: 'Big Spender', description: 'Large treasury expenditures' },
-        'medium-spender': { label: 'Medium Spender', description: 'Medium treasury expenditures' },
-        'small-spender': { label: 'Small Spender', description: 'Small treasury expenditures' },
-      },
-      deposit: '200 ROOT'
-    },
-    technical: {
-      label: 'Technical',
-      description: 'Runtime upgrades, protocol changes, technical implementations',
-      tracks: {
-        'root': { label: 'Root', description: 'Highest privilege level - for critical network changes' },
-        'technical-committee': { label: 'Technical Committee', description: 'Technical committee for protocol upgrades' },
-        'fellowship': { label: 'Fellowship', description: 'Technical fellowship proposals' },
-      },
-      deposit: '150 ROOT'
-    },
-    governance: {
-      label: 'Governance',
-      description: 'Governance parameter changes, voting mechanism updates',
-      tracks: {
-        'root': { label: 'Root', description: 'Highest privilege level - for critical network changes' },
-        'governance': { label: 'Governance', description: 'General governance changes' },
-      },
-      deposit: '250 ROOT'
-    },
-    general: {
-      label: 'General',
-      description: 'Community proposals, non-financial initiatives',
-      tracks: {
-        'root': { label: 'Root', description: 'Highest privilege level - for critical network changes' },
-        'general': { label: 'General', description: 'General community proposals' },
+        'FPass': { label: 'FPass', description: 'Use futurepass address' },
+        'EOA': { label: 'EOA', description: 'Use eoa address' },
       },
       deposit: '100 ROOT'
+    },
+    CouncilMotion: {
+      label: 'Council Propose Motion',
+      description: 'Council proposal motion can be created by council members only',
+      tracks: {
+        'FPass': { label: 'FPass', description: 'Use futurepass address' },
+        'EOA': { label: 'EOA', description: 'Use eoa address' },
+      },
+      deposit: '0 ROOT'
+    },
+    CouncilExternalMotion: {
+      label: 'Council External Propose Motion',
+      description: 'Council proposal external motion can be created by council members only',
+      tracks: {
+        'FPass': { label: 'FPass', description: 'Use futurepass address' },
+        'EOA': { label: 'EOA', description: 'Use eoa address' },
+      },
+      deposit: '0 ROOT'
     },
   };
 
@@ -360,10 +341,10 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   useEffect(() => {
     if (trnApi?.isReady && areaOptions.length == 0) {
       const options = Object
-          .keys(trnApi.query)
+          .keys(trnApi.tx)
           .filter((s) => !s.startsWith('$'))
           .sort()
-          .filter((n) => Object.keys(trnApi.query[n]).length)
+          .filter((n) => Object.keys(trnApi.tx[n]).length)
           .map((value) => ({
             label: value,
             value
@@ -407,19 +388,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   }, [proposalData.sectionName, proposalData.methodName, trnApi]);
 
   //{
-  //         params,
-  //             values: params.reduce(
-  //           (result: RawParams, param, index): RawParams => {
-  //             result.push(
-  //                 values?.[index]
-  //                     ? values[index]
-  //                     : createValue(registry, param)
-  //             );
   //
-  //             return result;
-  //           }, []
-  //       )
-  //       };
 
   const handleContinue = async () => {
     if (currentStep === 'setup' && proposalData.type) {
@@ -430,39 +399,103 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       // Handle submission
       console.log('Submitting proposal:', proposalData);
       if (!signer || !userSession || !trnApi || !builder) return;
+      setIsLoading(true);
+      const param = trnApi.registry.createType('FrameSupportPreimagesBounded', {hash_: encodedHash, len: encodedLength}, 2);
+      let extrinsic = "";
+      if (proposalData.type === "Democracy") {
+        extrinsic = trnApi.tx.democracy.propose(param, 100000000);
+      } else if (proposalData.type === "CouncilMotion") {
+        extrinsic = trnApi.tx.council.propose(proposalData.threshold, proposalExt, encodedLength);
+      } else if (proposalData.type === "CouncilExternalMotion") {
+        const call = trnApi.tx.democracy.externalProposeMajority(param);
+        extrinsic = trnApi.tx.council.propose(proposalData.threshold, call, call.encodedLength );
+      }
 
-      const section = trnApi.tx[proposalData.sectionName];
-      const method = section[proposalData.methodName];
-      const extrinsic = method(proposalData.params.join(','));
-
-      const tx = await builder
+      const tx = proposalData.track === 'FPass' ? await builder
           .fromExtrinsic(extrinsic)
-          .addFuturePass(userSession.futurepass);
+          .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
 
       const res = await tx.signAndSend({
         onSign: () => {
-          // setTxStatus("signing");
           toast.info('Signing', {
             description: `Your ${selectedProposalType?.label.toLowerCase()} proposal "${proposalData.title}" has been submitted to the ${JSON.stringify(selectedTrack)} track for community voting.`,
             duration: 5000,
           });
         },
-        onSend: () => {
-          // Show success toast
-          toast.success('Proposal submitted successfully!', {
-            description: `Your ${selectedProposalType?.label.toLowerCase()} proposal "${proposalData.title}" has been submitted to the ${JSON.stringify(selectedTrack)} track for community voting.`,
-            duration: 5000,
-          });
-        },
+        onSend: async () => {
+        }
       });
+      console.log("Extrinsic Result::",res);
+      const { extrinsicId, transactionHash, result } = res;
+      const event = result?.events.find((event) => {
+        // if (!("event" in event)) return event.name === "democracy.Proposed";
+          switch(proposalData.type) {
+              case 'Democracy': return event.event.section === "democracy" && event.event.method === "Proposed";
+              case "CouncilMotion":
+              case "CouncilExternalMotion":
+                return event.event.section === "council" && event.event.method === "Proposed";
+          }
+      });
+      const index = proposalData.type === ProposalType.Democracy ? event?.event.data[0].toNumber() : event?.event.data[1].toNumber();
+      console.log("Event1::", event.event.data[0].toString());
+      console.log("Event2::", event.event.data[1].toString());
+      const hash = proposalData.type === ProposalType.CouncilExternalMotion ? event.event.data[2].toString() : encodedHash;
+      if (index) {
+        try {
+          const {title, discussionLink, summary, details} = proposalData;
+          const response = await fetch('/api/proposals', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              idx: index,
+              extrinsicId,
+              title,
+              link: discussionLink,
+              summary,
+              description: details,
+              preimage: encodedHash,
+              successful: true,
+              deposit: proposalTypes[proposalData.type].deposit,
+              proposer: proposalData.track === 'FPass' ? userSession.futurepass : userSession.eoa,
+              hash: hash,
+              proposalType: proposalData.type,
+              status: ProposalStatus.Processing,
+              section: proposalData.sectionName,
+              threshold: parseInt(proposalData.threshold),
+              method: proposalData.methodName,
+              args: proposalData.params,
+              ayePercentage: 0,
+              nayPercentage: 100,
+              totalVotes: 0
+            }),
+          });
 
+          const data = await response.json();
+          console.log("Data:::", data);
 
-
-
-      // Navigate back to proposals page
-      setTimeout(() => {
-        onNavigate('proposals');
-      }, 1000);
+          if (data.success) {
+            // Show success toast
+            toast.success('Proposal submitted successfully!', {
+              description: `Your ${selectedProposalType?.label.toLowerCase()} proposal "${proposalData.title}" has been submitted to the ${JSON.stringify(selectedTrack)} track for community voting.`,
+              duration: 5000,
+            });
+          } else {
+            // setError(data.error || 'Something went wrong');
+          }
+        } catch (error) {
+        } finally {
+          // Navigate back to proposals page
+          setTimeout(() => {
+            if (proposalData.type === ProposalType.Democracy) {
+              onNavigate('proposals');
+            } else {
+              onNavigate('council');
+            }
+          }, 1000);
+        }
+      }
     }
   };
 
@@ -479,7 +512,11 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   const canContinue = () => {
     switch (currentStep) {
       case 'setup':
-        return !!(proposalData.type && proposalData.track && proposalData.timing && !error);
+         if (proposalData.type === ProposalType.Democracy)  {
+           return !!(proposalData.type && proposalData.track)
+         } else {
+           return !!(proposalData.type && proposalData.track && proposalData.timing)
+         }
       case 'details':
         return !!(proposalData.title && proposalData.summary);
       case 'review':
@@ -556,7 +593,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
                       transition={{ duration: 0.2 }}
                   >
                     <label className="text-sm text-foreground">
-                      Which governance track fits your proposal?
+                      Select account to create your proposal?
                     </label>
                     <Select
                         value={proposalData.track}
@@ -565,7 +602,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
                       <SelectTrigger className={`bg-input-background border text-foreground ${
                           proposalData.track ? 'border-blue-500' : 'border-border'
                       }`}>
-                        <SelectValue placeholder="Choose governance track">
+                        <SelectValue placeholder="Choose account">
                       {proposalData.track && selectedProposalType &&
                       proposalData.track in selectedProposalType.tracks
                           ? (selectedProposalType.tracks as any)[proposalData.track]?.label
@@ -587,7 +624,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
               )}
 
               {/* Timing Selection */}
-              {proposalData.track && (
+              {proposalData.type !== 'Democracy' && (
                   <motion.div
                       className="space-y-3"
                       initial={{ opacity: 0, y: 10 }}
@@ -595,48 +632,48 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
                       transition={{ duration: 0.2, delay: 0.1 }}
                   >
                     <label className="text-sm text-foreground">
-                      When should this take effect?
+                      Enter threshold
                     </label>
-                    <div className="flex gap-3">
-                      <Select
-                          value={proposalData.timing}
-                          onValueChange={(value) => setProposalData({...proposalData, timing: value})}
-                      >
-                        <SelectTrigger className="bg-input-background border-border text-foreground flex-1">
-                          <SelectValue placeholder="Choose timing">
-                        {proposalData.timing && proposalData.timing in timingOptions
-                            ? timingOptions[proposalData.timing as keyof typeof timingOptions]?.label
-                            : null}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(timingOptions).map(([key, timing]) => (
-                              <SelectItem key={key} value={key}>
-                                <div>
-                                  <div className="font-medium">{timing.label}</div>
-                                  <div className="text-xs text-muted-foreground">{timing.description}</div>
-                                </div>
-                              </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button variant="outline" className="px-6">
-                        Customize
-                      </Button>
-                    </div>
-                    {proposalData.timing === 'custom' && (
+                    {/*<div className="flex gap-3">*/}
+                    {/*  <Select*/}
+                    {/*      value={proposalData.timing}*/}
+                    {/*      onValueChange={(value) => setProposalData({...proposalData, timing: value})}*/}
+                    {/*  >*/}
+                    {/*    <SelectTrigger className="bg-input-background border-border text-foreground flex-1">*/}
+                    {/*      <SelectValue placeholder="Choose timing">*/}
+                    {/*    {proposalData.timing && proposalData.timing in timingOptions*/}
+                    {/*        ? timingOptions[proposalData.timing as keyof typeof timingOptions]?.label*/}
+                    {/*        : null}*/}
+                    {/*      </SelectValue>*/}
+                    {/*    </SelectTrigger>*/}
+                    {/*    <SelectContent>*/}
+                    {/*      {Object.entries(timingOptions).map(([key, timing]) => (*/}
+                    {/*          <SelectItem key={key} value={key}>*/}
+                    {/*            <div>*/}
+                    {/*              <div className="font-medium">{timing.label}</div>*/}
+                    {/*              <div className="text-xs text-muted-foreground">{timing.description}</div>*/}
+                    {/*            </div>*/}
+                    {/*          </SelectItem>*/}
+                    {/*      ))}*/}
+                    {/*    </SelectContent>*/}
+                    {/*  </Select>*/}
+                    {/*  <Button variant="outline" className="px-6">*/}
+                    {/*    Customize*/}
+                    {/*  </Button>*/}
+                    {/*</div>*/}
+                    {/*{proposalData.timing === 'custom' && (*/}
                         <Input
-                            value={proposalData.customTiming}
-                            onChange={(e) => setProposalData({...proposalData, customTiming: e.target.value})}
-                            placeholder="Enter custom block number or time"
+                            value={proposalData.threshold}
+                            onChange={(e) => setProposalData({...proposalData, threshold: e.target.value})}
+                            placeholder="0"
                             className="bg-input-background border-border text-foreground"
                         />
-                    )}
+                    {/*)}*/}
                   </motion.div>
               )}
 
               {/* Builder Mode Selection */}
-              {proposalData.timing && (
+
                   <motion.div
                       className="space-y-4"
                       initial={{ opacity: 0, y: 10 }}
@@ -755,7 +792,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
                         </motion.div>
                     )}
                   </motion.div>
-              )}
+
             </div>
         );
 
@@ -932,13 +969,16 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
 
           <div className="pt-4 border-t border-border">
             <Badge className="bg-green-500/20 text-green-400 text-[6px] px-1.5 py-0.5">
-              {(selectedTrack as any)?.label || 'No Track Selected'}
+              {(selectedTrack as any)?.label || 'No Account Selected'}
             </Badge>
           </div>
         </div>
     );
   };
 
+  if (isLoading) {
+    return <LoadingComponent />;
+  }
   // Show Connect Wallet screen for non-logged-in users
   if (!userSession) {
     return (

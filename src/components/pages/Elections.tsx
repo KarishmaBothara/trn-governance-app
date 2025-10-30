@@ -12,6 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Plus, Vote, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUser } from '../UserContext';
+import {useAuth} from "@futureverse/auth-react";
+import {useSigner} from "@/hooks/useSigner";
+import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
+import {useTrnApi} from "@futureverse/transact-react";
+import {useCouncilMembers} from "@/hooks/useCouncilMembers";
+import {nominate, vote} from "@/lib/utils";
 
 // interface ElectionsProps {
 //   onNavigate: (page: NavigationItem) => void;
@@ -50,108 +56,128 @@ const mockElectionConfig: ElectionConfig = {
   termRemainingMs: Math.floor(Math.random() * 28) * 24 * 60 * 60 * 1000, // Random days remaining in 28-day term
 };
 
-const mockCandidates: Candidate[] = [
-  {
-    id: '1',
-    name: 'FV Seona',
-    address: '0vndh8..94803',
-    description: 'Experienced blockchain developer with focus on decentralized governance. Active contributor to the Root Network ecosystem.',
-    supportWeight: '2.4M ROOT',
-    votes: 156,
-    isCurrentMember: true,
-    hasUserVoted: false,
-  },
-  {
-    id: '2',
-    name: 'Alexander Chen',
-    address: '0x123..45678',
-    description: 'Technical expert specializing in cross-chain infrastructure and protocol development.',
-    supportWeight: '1.8M ROOT',
-    votes: 134,
-    isCurrentMember: true,
-    hasUserVoted: true,
-  },
-  {
-    id: '3',
-    name: 'Maria Rodriguez',
-    address: '0xabc..def99',
-    description: 'Community advocate with deep expertise in governance processes and treasury management.',
-    supportWeight: '1.6M ROOT',
-    votes: 128,
-    isCurrentMember: true,
-    hasUserVoted: false,
-  },
-  {
-    id: '4',
-    name: 'David Kim',
-    address: '0x789..abc12',
-    description: 'Security specialist focusing on network resilience and risk management.',
-    supportWeight: '1.4M ROOT',
-    votes: 112,
-    isCurrentMember: true,
-    hasUserVoted: false,
-  },
-  {
-    id: '5',
-    name: 'Sarah Thompson',
-    address: '0xfed..543ba',
-    description: 'Ecosystem development lead with extensive experience in partnership building.',
-    supportWeight: '1.2M ROOT',
-    votes: 98,
-    isCurrentMember: true,
-    hasUserVoted: false,
-  },
-  {
-    id: '6',
-    name: 'Jennifer Martinez',
-    address: '0x456..789ab',
-    description: 'DeFi protocol architect with 5+ years experience in decentralized finance.',
-    supportWeight: '950K ROOT',
-    votes: 87,
-    isCurrentMember: false,
-    hasUserVoted: false,
-  },
-  {
-    id: '7',
-    name: 'Michael Chang',
-    address: '0xcde..f012',
-    description: 'Research scientist focused on consensus mechanisms and network optimization.',
-    supportWeight: '820K ROOT',
-    votes: 75,
-    isCurrentMember: false,
-    hasUserVoted: true,
-  },
-  {
-    id: '8',
-    name: 'Emma Watson',
-    address: '0x345..678cd',
-    description: 'Community manager and governance specialist with proven track record.',
-    supportWeight: '670K ROOT',
-    votes: 62,
-    isCurrentMember: false,
-    hasUserVoted: false,
-  },
-];
+// const mockCandidates: Candidate[] = [
+//   {
+//     id: '1',
+//     name: 'FV Seona',
+//     address: '0vndh8..94803',
+//     description: 'Experienced blockchain developer with focus on decentralized governance. Active contributor to the Root Network ecosystem.',
+//     supportWeight: '2.4M ROOT',
+//     votes: 156,
+//     isCurrentMember: true,
+//     hasUserVoted: false,
+//   },
+//   {
+//     id: '2',
+//     name: 'Alexander Chen',
+//     address: '0x123..45678',
+//     description: 'Technical expert specializing in cross-chain infrastructure and protocol development.',
+//     supportWeight: '1.8M ROOT',
+//     votes: 134,
+//     isCurrentMember: true,
+//     hasUserVoted: true,
+//   },
+//   {
+//     id: '3',
+//     name: 'Maria Rodriguez',
+//     address: '0xabc..def99',
+//     description: 'Community advocate with deep expertise in governance processes and treasury management.',
+//     supportWeight: '1.6M ROOT',
+//     votes: 128,
+//     isCurrentMember: true,
+//     hasUserVoted: false,
+//   },
+//   {
+//     id: '4',
+//     name: 'David Kim',
+//     address: '0x789..abc12',
+//     description: 'Security specialist focusing on network resilience and risk management.',
+//     supportWeight: '1.4M ROOT',
+//     votes: 112,
+//     isCurrentMember: true,
+//     hasUserVoted: false,
+//   },
+//   {
+//     id: '5',
+//     name: 'Sarah Thompson',
+//     address: '0xfed..543ba',
+//     description: 'Ecosystem development lead with extensive experience in partnership building.',
+//     supportWeight: '1.2M ROOT',
+//     votes: 98,
+//     isCurrentMember: true,
+//     hasUserVoted: false,
+//   },
+//   {
+//     id: '6',
+//     name: 'Jennifer Martinez',
+//     address: '0x456..789ab',
+//     description: 'DeFi protocol architect with 5+ years experience in decentralized finance.',
+//     supportWeight: '950K ROOT',
+//     votes: 87,
+//     isCurrentMember: false,
+//     hasUserVoted: false,
+//   },
+//   {
+//     id: '7',
+//     name: 'Michael Chang',
+//     address: '0xcde..f012',
+//     description: 'Research scientist focused on consensus mechanisms and network optimization.',
+//     supportWeight: '820K ROOT',
+//     votes: 75,
+//     isCurrentMember: false,
+//     hasUserVoted: true,
+//   },
+//   {
+//     id: '8',
+//     name: 'Emma Watson',
+//     address: '0x345..678cd',
+//     description: 'Community manager and governance specialist with proven track record.',
+//     supportWeight: '670K ROOT',
+//     votes: 62,
+//     isCurrentMember: false,
+//     hasUserVoted: false,
+//   },
+// ];
 
 // export function Elections({ onNavigate }: ElectionsProps) {
 export function Elections() {
-  const { isLoggedIn, userProfile } = useUser();
+  // const { isLoggedIn, userProfile } = useUser();
+  const { userSession } = useAuth();
+  const eoa = userSession?.eoa;
+  const fpass = userSession?.futurepass;
+  const signer = useSigner();
+  const { trnApi } = useTrnApi();
+  const builder = useCustomExtrinsicBuilder({
+    signer,
+    walletAddress: userSession?.eoa ?? "",
+    trnApi,
+  });
+  const [isCouncilMember, setIsCouncilMember] = useState(false);
   // const { isLoggedIn, userRole, userProfile } = useUser();
-  const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
+  const userProfile = (userSession?.user?.profile?.profile as any)?.selectedProfile || {};
+  // const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
   const [userVotes, setUserVotes] = useState<string[]>([]);
   const [isNominateModalOpen, setIsNominateModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [termCountdown, setTermCountdown] = useState<string>('');
   const [sortBy, setSortBy] = useState<'support-weight' | 'alphabet'>('support-weight');
+  const { data: councilMembers } = useCouncilMembers();
+  const candidates = councilMembers?.filter(cm => cm.verified === false) || [];
 
   // Nomination form state
   const [nominationForm, setNominationForm] = useState({
     name: '',
+    address: 'FPass',
     description: '',
     discordLink: '',
     twitterLink: ''
   });
+
+  const accountType = {
+    'FPass': { label: 'FPass', description: 'Use futurepass address' },
+    'EOA': { label: 'EOA', description: 'Use eoa address' },
+  };
 
   // Countdown timer effect
   useEffect(() => {
@@ -182,16 +208,33 @@ export function Elections() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleNominate = () => {
-    if (!nominationForm.name || !nominationForm.description) {
+  const handleNominate = async () => {
+    if (!nominationForm.name || !nominationForm.description || !nominationForm.address) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    // Simulate nomination
-    toast.success(`Successfully nominated! CandidacyBond of ${mockElectionConfig.candidacyBond} ROOT has been locked.`);
+    if (!signer || !userSession || !trnApi || !builder) return;
+    const candidateCount = 0;
+    const extrinsic = trnApi.tx.elections.submitCandidacy(candidateCount);
+
+    const tx = nominationForm.address === 'FPass' ? await builder
+        .fromExtrinsic(extrinsic)
+        .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+
+    const status = await nominate(tx, toast, nominationForm);
+
+    if (status) {
+      toast.success(`Successfully nominated! CandidacyBond of ${mockElectionConfig.candidacyBond} ROOT has been locked.`);
+    } else {
+      toast.success('Nomination unsuccessful', {
+        description: `Your candidate nomination did not complete`,
+        duration: 5000,
+      });
+    }
+
     setIsNominateModalOpen(false);
-    setNominationForm({ name: '', description: '', discordLink: '', twitterLink: '' });
+    setNominationForm({ name: '', address: '', description: '', discordLink: '', twitterLink: '' });
   };
 
   const handleVote = () => {
@@ -209,12 +252,12 @@ export function Elections() {
       (selectedCandidates.length * mockElectionConfig.votingBondFactor);
 
     // Update vote counts and user vote status
-    setCandidates(prev => prev.map(candidate => {
-      if (selectedCandidates.includes(candidate.id)) {
-        return { ...candidate, hasUserVoted: true, votes: candidate.votes + 1 };
-      }
-      return candidate;
-    }));
+    // setCandidates(prev => prev.map(candidate => {
+    //   if (selectedCandidates.includes(candidate.id)) {
+    //     return { ...candidate, hasUserVoted: true, votes: candidate.votes + 1 };
+    //   }
+    //   return candidate;
+    // }));
 
     setUserVotes(selectedCandidates);
     toast.success(`Successfully voted for ${selectedCandidates.length} candidates! Voting deposit: ${votingDeposit.toFixed(2)} ROOT`);
@@ -238,7 +281,7 @@ export function Elections() {
   // Sort candidates based on selected sort option
   const sortedCandidates = [...candidates].sort((a, b) => {
     if (sortBy === 'support-weight') {
-      return b.votes - a.votes; // Sort by votes (descending)
+      return parseInt(b.votes) - parseInt(a.votes); // Sort by votes (descending)
     } else {
       return a.name.localeCompare(b.name); // Sort alphabetically (ascending)
     }
@@ -296,15 +339,16 @@ export function Elections() {
             if (userProfile) {
               setNominationForm(prev => ({
                 ...prev,
-                name: userProfile.name || '',
+                name: userProfile.displayName || '',
                 discordLink: userProfile.discordHandle || '',
-                twitterLink: userProfile.twitterHandle || ''
+                twitterLink: userProfile.twitterHandle || '',
+                address: eoa || ''
               }));
             }
             setIsNominateModalOpen(true);
           }}
           className="flex items-center gap-2"
-          disabled={!isLoggedIn}
+          disabled={!userSession}
           title=""
         >
           <Plus size={16} />
@@ -315,14 +359,14 @@ export function Elections() {
           onClick={() => setIsVoteModalOpen(true)}
           variant="outline"
           className="flex items-center gap-2"
-          disabled={!isLoggedIn || userVotes.length > 0}
+          disabled={!userSession || userVotes.length > 0}
           title=""
         >
           <Vote size={16} />
           {userVotes.length > 0 ? `Voted for ${userVotes.length} candidates` : 'Vote for Candidates'}
         </Button>
 
-        {!isLoggedIn && (
+        {!userSession && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <AlertCircle size={16} />
             Connect your wallet to participate in elections
@@ -440,7 +484,36 @@ export function Elections() {
               <div className="bg-muted/20 border border-border rounded-lg p-4">
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Your Address</Label>
-                  <p className="text-sm font-mono break-all">{userProfile.address}</p>
+                  <Select
+                      value={nominationForm.address}
+                      onValueChange={(value) => {
+                        setNominationForm({ ...nominationForm, address: value});
+                      }}
+                  >
+                    <SelectTrigger className="bg-input-background border-border text-foreground">
+                      <SelectValue placeholder="Choose proposal type">
+                        {/*{proposalData.type ? proposalTypes[proposalData.type]?.label : null}*/}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(accountType).map(([key, type]) => (
+                          <SelectItem key={key} value={key}>
+                            <div>
+                              <div className="font-medium">{type.label}</div>
+                              <div className="text-xs text-muted-foreground">{type.description}</div>
+                            </div>
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/*<Input*/}
+                  {/*    id="address"*/}
+                  {/*    value={nominationForm.address}*/}
+                  {/*    onChange={(e) => setNominationForm({ ...nominationForm, address: e.target.value })}*/}
+                  {/*    placeholder="Enter your name or organization"*/}
+                  {/*    className="bg-input-background border-border"*/}
+                  {/*/>*/}
+                  {/*<p className="text-sm font-mono break-all">{userProfile.address}</p>*/}
                 </div>
               </div>
             )}

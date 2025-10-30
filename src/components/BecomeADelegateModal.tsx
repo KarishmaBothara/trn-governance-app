@@ -11,6 +11,8 @@ import { User, Twitter, MessageCircle, AlertCircle, CheckCircle } from 'lucide-r
 import { toast } from 'sonner';
 import { useUser } from './UserContext';
 import { ConnectWalletButton } from './ConnectWalletButton';
+import { useAuth } from "@futureverse/auth-react";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 interface BecomeADelegateModalProps {
   isOpen: boolean;
@@ -18,15 +20,22 @@ interface BecomeADelegateModalProps {
 }
 
 export function BecomeADelegateModal({ isOpen, onClose }: BecomeADelegateModalProps) {
-  const { isLoggedIn } = useUser();
+  // const { isLoggedIn } = useUser();
+  const { userSession } = useAuth();
+  console.log("User session::", userSession);
   const [formData, setFormData] = useState({
     name: '',
+    account: '',
     bio: '',
     twitterHandle: '',
     discordHandle: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const accountType = {
+    'FPass': { label: 'FPass', description: 'Use futurepass address' },
+    'EOA': { label: 'EOA', description: 'Use eoa address' },
+  };
 
   const handleSubmit = async () => {
     if (!canSubmit()) return;
@@ -38,6 +47,38 @@ export function BecomeADelegateModal({ isOpen, onClose }: BecomeADelegateModalPr
 
     setIsSubmitting(false);
     setSubmitted(true);
+
+    try {
+      const response = await fetch('/api/delegates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          address: formData.account === "FPass" ? userSession?.futurepass?.toString() : userSession?.eoa?.toString(),
+          description: formData.bio,
+          twitter: formData.twitterHandle,
+          discord: formData.discordHandle,
+          totalDelegators: 0,
+          participation: 0,
+          votingHistory: [],
+          votingPower: '0'
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Data:::", data);
+
+      if (data.success) {
+        // Show success toast
+        return true;
+      } else {
+        // setError(data.error || 'Something went wrong');
+        return undefined;
+      }
+    } catch (error) {
+    }
 
     // Show success toast
     toast.success('Delegate registration submitted!', {
@@ -51,6 +92,7 @@ export function BecomeADelegateModal({ isOpen, onClose }: BecomeADelegateModalPr
       setSubmitted(false);
       setFormData({
         name: '',
+        account: '',
         bio: '',
         twitterHandle: '',
         discordHandle: ''
@@ -153,6 +195,31 @@ export function BecomeADelegateModal({ isOpen, onClose }: BecomeADelegateModalPr
 
             {/* Basic Information */}
             <div className="space-y-4">
+              <div className="space-y-3">
+                {/*<label className="text-sm text-foreground">*/}
+                {/*  What type of proposal are you making?*/}
+                {/*</label>*/}
+                <Select
+                    value={formData.account}
+                    onValueChange={(value) => { setFormData({...formData, account: value})}}
+                >
+                  <SelectTrigger className="bg-input-background border-border text-foreground">
+                    <SelectValue placeholder="Choose account type">
+                      {/*{proposalData.type ? proposalTypes[proposalData.type]?.label : null}*/}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(accountType).map(([key, type]) => (
+                        <SelectItem key={key} value={key}>
+                          <div>
+                            <div className="font-medium">{type.label}</div>
+                            <div className="text-xs text-muted-foreground">{type.description}</div>
+                          </div>
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label className="text-foreground">Delegate Name *</Label>
                 <Input
@@ -249,7 +316,7 @@ export function BecomeADelegateModal({ isOpen, onClose }: BecomeADelegateModalPr
             >
               Cancel
             </Button>
-            {isLoggedIn ? (
+            {userSession ? (
               <Button
                 onClick={handleSubmit}
                 disabled={!canSubmit() || isSubmitting}

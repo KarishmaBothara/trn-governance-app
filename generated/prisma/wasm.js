@@ -35,11 +35,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.16.1
+ * Prisma Client JS version: 6.16.2
  * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
  */
 Prisma.prismaVersion = {
-  client: "6.16.1",
+  client: "6.16.2",
   engine: "1c57fdcd7e44b29b9313256c76699e91c3ac3c43"
 }
 
@@ -87,13 +87,63 @@ Prisma.NullTypes = {
  */
 exports.Prisma.ProposalScalarFieldEnum = {
   id: 'id',
+  idx: 'idx',
+  extrinsicId: 'extrinsicId',
   preimage: 'preimage',
   deposit: 'deposit',
   title: 'title',
   summary: 'summary',
   description: 'description',
   link: 'link',
-  successful: 'successful'
+  successful: 'successful',
+  proposer: 'proposer',
+  proposalType: 'proposalType',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  hash: 'hash',
+  status: 'status',
+  method: 'method',
+  section: 'section',
+  args: 'args',
+  threshold: 'threshold',
+  ayePercentage: 'ayePercentage',
+  nayPercentage: 'nayPercentage',
+  totalVotes: 'totalVotes'
+};
+
+exports.Prisma.VotesScalarFieldEnum = {
+  id: 'id',
+  refIdx: 'refIdx',
+  pId: 'pId',
+  voter: 'voter',
+  voteAye: 'voteAye',
+  conviction: 'conviction'
+};
+
+exports.Prisma.CouncilScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  address: 'address',
+  backing: 'backing',
+  votes: 'votes',
+  description: 'description',
+  hasDiscord: 'hasDiscord',
+  hasTwitter: 'hasTwitter',
+  twitter: 'twitter',
+  discord: 'discord',
+  verified: 'verified'
+};
+
+exports.Prisma.DelegateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  address: 'address',
+  votingPower: 'votingPower',
+  totalDelegators: 'totalDelegators',
+  participation: 'participation',
+  description: 'description',
+  twitter: 'twitter',
+  discord: 'discord'
 };
 
 exports.Prisma.SortOrder = {
@@ -105,10 +155,24 @@ exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
+exports.ProposalStatus = exports.$Enums.ProposalStatus = {
+  Cancelled: 'Cancelled',
+  Rejected: 'Rejected',
+  Passed: 'Passed',
+  Processing: 'Processing'
+};
 
+exports.ProposalType = exports.$Enums.ProposalType = {
+  Democracy: 'Democracy',
+  CouncilMotion: 'CouncilMotion',
+  CouncilExternalMotion: 'CouncilExternalMotion'
+};
 
 exports.Prisma.ModelName = {
-  Proposal: 'Proposal'
+  Proposal: 'Proposal',
+  Votes: 'Votes',
+  Council: 'Council',
+  Delegate: 'Delegate'
 };
 /**
  * Create the Client
@@ -143,13 +207,12 @@ const config = {
     "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
-  "clientVersion": "6.16.1",
+  "clientVersion": "6.16.2",
   "engineVersion": "1c57fdcd7e44b29b9313256c76699e91c3ac3c43",
   "datasourceNames": [
     "db"
   ],
   "activeProvider": "mongodb",
-  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -158,13 +221,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Proposal {\n  id          String  @id @default(auto()) @map(\"_id\") @db.ObjectId\n  preimage    String\n  deposit     Int\n  title       String\n  summary     String\n  description String\n  link        String\n  successful  Boolean\n\n  @@index([id, preimage])\n  @@map(\"proposal\")\n}\n",
-  "inlineSchemaHash": "58fa5fcef2d9a5f66b12425e49c6af26ab0fd597994e6b6754e28a0d8508c37e",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Proposal {\n  id            String         @id @default(auto()) @map(\"_id\") @db.ObjectId\n  idx           Int\n  extrinsicId   String\n  preimage      String\n  deposit       String\n  title         String\n  summary       String\n  description   String\n  link          String\n  successful    Boolean\n  proposer      String\n  proposalType  ProposalType\n  createdAt     DateTime       @default(now())\n  updatedAt     DateTime\n  hash          String?\n  status        ProposalStatus\n  method        String\n  section       String\n  args          Json?\n  threshold     Int\n  ayePercentage Int?\n  nayPercentage Int?\n  totalVotes    Int\n\n  @@index([id, idx])\n  @@map(\"proposal\")\n}\n\nmodel Votes {\n  id         String  @id @default(auto()) @map(\"_id\") @db.ObjectId\n  refIdx     Int\n  pId        Int\n  voter      String\n  voteAye    Boolean\n  conviction String?\n\n  @@map(\"votes\")\n}\n\nenum ProposalStatus {\n  Cancelled\n  Rejected\n  Passed\n  Processing\n}\n\nmodel Council {\n  id          String      @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name        String\n  address     String      @unique\n  backing     String\n  votes       String\n  description String\n  hasDiscord  Boolean\n  hasTwitter  Boolean\n  twitter     String?\n  discord     String?\n  verified    Boolean\n  stats       StatsValue?\n\n  @@index([id, address])\n  @@map(\"council\")\n}\n\ntype StatsValue {\n  motionsProposed Int\n  participation   String\n  termStart       String\n}\n\nenum ProposalType {\n  Democracy\n  CouncilMotion\n  CouncilExternalMotion\n}\n\ntype VotingHistory {\n  proposalId String\n  title      String\n  date       String\n  vote       Boolean\n}\n\nmodel Delegate {\n  id              String          @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name            String\n  address         String          @unique\n  votingPower     String\n  totalDelegators Int\n  participation   Int\n  description     String\n  twitter         String?\n  discord         String?\n  votingHistory   VotingHistory[]\n\n  @@index([id, address])\n  @@map(\"delegate\")\n}\n",
+  "inlineSchemaHash": "436a931bdb0ba2ac2ee4739891da3b3cd51348025b23d521c813058a1dd878c2",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Proposal\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"preimage\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"deposit\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"summary\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"link\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"successful\",\"kind\":\"scalar\",\"type\":\"Boolean\"}],\"dbName\":\"proposal\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Proposal\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"idx\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"extrinsicId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"preimage\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"deposit\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"summary\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"link\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"successful\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"proposer\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"proposalType\",\"kind\":\"enum\",\"type\":\"ProposalType\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"hash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ProposalStatus\"},{\"name\":\"method\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"section\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"args\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"threshold\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"ayePercentage\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"nayPercentage\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"totalVotes\",\"kind\":\"scalar\",\"type\":\"Int\"}],\"dbName\":\"proposal\"},\"Votes\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"refIdx\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"pId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"voter\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"voteAye\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"conviction\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"votes\"},\"Council\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"backing\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"votes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"hasDiscord\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"hasTwitter\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"twitter\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"discord\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"verified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"stats\",\"kind\":\"object\",\"type\":\"StatsValue\"}],\"dbName\":\"council\"},\"Delegate\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"votingPower\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"totalDelegators\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"participation\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"twitter\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"discord\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"votingHistory\",\"kind\":\"object\",\"type\":\"VotingHistory\"}],\"dbName\":\"delegate\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

@@ -13,6 +13,17 @@ import { toast } from 'sonner';
 import { useUser } from '../UserContext';
 import { mockCancellationMotions } from '../council/mockData';
 import { CancellationMotion, CancellationVote, CancellationVoteType } from '../council/types';
+import {useReferendumInfo} from "@/hooks/useReferendums";
+import {useBestNumber} from "@/hooks/useBestNumber";
+import {useBlockTime} from "@/hooks/useBlockTime";
+import {BN_ONE} from "@polkadot/util";
+import {useTrnApi} from "@futureverse/transact-react";
+import {useAuth} from "@futureverse/auth-react";
+import {useSigner} from "@/hooks/useSigner";
+import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
+import {useCouncilMembers} from "@/hooks/useCouncilMembers";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {updateVote} from "@/lib/utils";
 
 interface ReferendumDetailProps {
   referendumId: string | null;
@@ -20,7 +31,17 @@ interface ReferendumDetailProps {
 }
 
 export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailProps) {
-  const { isLoggedIn, isCouncilMember } = useUser();
+  const [isCouncilMember, setIsCouncilMember] = useState(false);
+  const { userSession } = useAuth();
+  const eoa = userSession?.eoa;
+  const fpass = userSession?.futurepass;
+  const signer = useSigner();
+  const { trnApi } = useTrnApi();
+  const builder = useCustomExtrinsicBuilder({
+    signer,
+    walletAddress: userSession?.eoa ?? "",
+    trnApi,
+  });
   const [voteDirection, setVoteDirection] = useState<'aye' | 'nay' | null>('aye');
   // const [stakeAmount, setStakeAmount] = useState([200]);
   const [rootAmount, setRootAmount] = useState('200');
@@ -30,6 +51,43 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
   const [cancellationMotion, setCancellationMotion] = useState<CancellationMotion | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [cancellationVotes, setCancellationVotes] = useState<CancellationVote[]>([]);
+  const { data: referendumData } = useReferendumInfo();
+  console.log("referendumData::",referendumData);
+  console.log("referendumId::",referendumId);
+  const p = referendumData && referendumData.find(r => r.refIdx === referendumId);
+  console.log("P::",p);
+  const ayeVotes = p?.voteCountAye;
+  const nayVotes = p?.voteCountNay;
+  const totalVotes = ayeVotes + nayVotes;
+  const ayePercentage = Math.round((ayeVotes / totalVotes) * 100) || 0;
+  const nayPercentage = 100 - ayePercentage;
+  const status = p?.status;
+  const { data: bestNumber } = useBestNumber();
+  const enactBlock = status?.end.add(status.delay);
+  const remainBlock = status?.end.sub(bestNumber).isub(BN_ONE);
+  const { data: councilMembers } = useCouncilMembers();
+
+  const [, votingPeriodHours] = useBlockTime(remainBlock, trnApi);
+
+  const [account, setAccount] = useState<string>('EOA');
+  const accountType = {
+    'FPass': { label: 'FPass', description: 'Use futurepass address' },
+    'EOA': { label: 'EOA', description: 'Use eoa address' },
+  };
+  // const [, enactmentDate] = useBlockTime(enactBlock.sub(bestNumber), trnApi);
+
+  if (!bestNumber || status?.end.sub(bestNumber).lten(0)) {
+    return null;
+  }
+
+  useEffect(() => {
+    if (councilMembers && eoa && fpass) {
+      const exist = councilMembers.find(cm => cm.address.toLowerCase() === eoa.toLowerCase() || cm.address.toLowerCase() === fpass.toLowerCase())
+      if (exist) {
+        setIsCouncilMember(true);
+      }
+    }
+  }, [councilMembers, eoa, fpass]);
 
   // Check if there's an active cancellation motion for this referendum
   useEffect(() => {
@@ -42,31 +100,39 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
   // Mock referendum data - status depends on cancellation motion result
   const referendum = {
     id: referendumId,
-    title: 'Runtime Upgrade v1.2.0',
+    pId: p?.idx,
+    title: p?.title,
     status: cancellationMotion?.status === 'passed' ? 'Cancelled' : 'Active',
     track: 'Root',
-    proposer: 'Alexander Chen',
-    daysLeft: Math.floor(Math.random() * 28) + 1, // Random days left in 28-day voting period
-    ayePercentage: 73,
-    nayPercentage: 27,
-    ayeVotes: 4200000,
-    nayVotes: 1550000,
+    proposer: p?.proposer,
+    daysLeft: votingPeriodHours, // Random days left in 28-day voting period
+    ayePercentage: ayePercentage,
+    nayPercentage: nayPercentage,
+    ayeVotes: ayeVotes,
+    nayVotes: nayVotes,
     enactmentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 30-day enactment delay
     bondedAmount: '50 ROOT'
   };
 
   // Mock existing vote data - null if referendum is cancelled
+  // const [existingVote, setExistingVote] = useState<{
+  //   direction: 'aye' | 'nay';
+  //   amount: string;
+  //   conviction: number;
+  //   votingPower: number;
+  // } | null>(referendum.status === 'Cancelled' ? null : {
+  //   direction: 'aye',
+  //   amount: '150',
+  //   conviction: 1,
+  //   votingPower: 300
+  // });
+
   const [existingVote, setExistingVote] = useState<{
     direction: 'aye' | 'nay';
     amount: string;
     conviction: number;
     votingPower: number;
-  } | null>(referendum.status === 'Cancelled' ? null : {
-    direction: 'aye',
-    amount: '150',
-    conviction: 1,
-    votingPower: 300
-  });
+  } | null>( null );
 
   // Countdown timer for cancellation motion
   useEffect(() => {
@@ -115,7 +181,8 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
     }
   }, [existingVote]);
 
-  const handleVoteSubmit = () => {
+  const handleVoteSubmit = async () => {
+    // Call extrinsic to vote
     // Don't allow voting on cancelled referendums
     if (referendum.status === 'Cancelled') {
       toast.error('Cannot vote on a cancelled referendum');
@@ -123,37 +190,105 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
     }
 
     const voteType = voteDirection === 'aye' ? 'Aye' : 'Nay';
+    const aye = voteDirection === 'aye' ? true : false;
     const convictionMultiplier = Math.pow(2, conviction[0]);
     const isUpdate = existingVote !== null;
 
-    if (existingVote) {
-      setExistingVote({
-        direction: voteDirection!,
-        amount: rootAmount,
-        conviction: conviction[0],
-        votingPower: votingPower
-      });
-    }
+    if (!signer || !userSession || !trnApi || !builder) return;
+    // setIsLoading(true);
+    // referendumId
+    const convictionValue = trnApi.registry.createType('Conviction', conviction[0]);
+    console.log("convictionValue::",convictionValue.toJSON());
+    // [referendumId, { Standard: { balance, vote: { aye: false, conviction } } }]
+    const vote = trnApi.registry.createType('PalletDemocracyVoteAccountVote', { vote: { aye: aye, conviction: convictionValue}, balance: rootAmount}, 0);
+    const extrinsic = trnApi.tx.democracy.vote(referendumId, vote);
 
-    toast.success(
-      <div className="space-y-2">
-        <div className="font-medium">
-          {isUpdate ? 'Vote updated successfully!' : 'Vote submitted successfully!'}
-        </div>
-        <div className="text-sm text-muted-foreground">
-          {rootAmount} ROOT × {convictionMultiplier} conviction ({voteType})
-        </div>
-        <button
-          onClick={() => onNavigate('portfolio')}
-          className="text-primary text-sm underline hover:no-underline"
-        >
-          View in Portfolio →
-        </button>
-      </div>,
-      {
-        duration: 6000,
+    const tx = account === 'FPass' ? await builder
+        .fromExtrinsic(extrinsic)
+        .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+
+
+    const res = await tx.signAndSend({
+      onSign: () => {
+        // setTxStatus("signing");
+        toast.success(<div className="space-y-2">
+              <div className="font-medium">
+                {isUpdate ? 'Vote updated successfully!' : 'Vote submitted successfully!'}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {rootAmount} ROOT × {convictionMultiplier} conviction ({voteType})
+              </div>
+              <button
+                  onClick={() => onNavigate('portfolio')}
+                  className="text-primary text-sm underline hover:no-underline"
+              >
+                View in Portfolio →
+              </button>
+            </div>,
+            {
+              duration: 6000,
+            }
+        );
+      },
+      onSend: async () => {
       }
-    );
+    });
+    console.log("Extrinsic Result::",res);
+    const { extrinsicId, transactionHash, result } = res;
+    const event = result?.events.find((event) => {
+      if (!("event" in event)) return event.name === "democracy.Voted";
+
+      return event.event.section === "democracy" && event.event.method === "Voted";
+    });
+    if (event) {
+      const voter = event.event.data[0].toString();
+      const refIndex = event.event.data[1].toNumber();
+      const eventVote = event.event.data[2].toJSON();
+      const isAye = eventVote.standard.vote === "0x83" ? true : false;
+      const amount = eventVote.standard.balance;
+      const pId = referendum.pId;
+
+      await updateVote(voter, refIndex,  isAye, amount, parseInt(pId));
+
+      // console.log("Event1::", event.event.data[0].toString());
+      // console.log("Event2::", event.event.data[1].toString());
+      //   console.log("Event3::", event.event.data[2].toString());
+
+      if (existingVote) {
+        setExistingVote({
+          direction: voteDirection!,
+          amount: rootAmount,
+          conviction: conviction[0],
+          votingPower: votingPower
+        });
+      }
+
+      toast.success(
+          <div className="space-y-2">
+            <div className="font-medium">
+              {isUpdate ? 'Vote updated successfully!' : 'Vote submitted successfully!'}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {rootAmount} ROOT × {convictionMultiplier} conviction ({voteType})
+            </div>
+            <button
+                onClick={() => onNavigate('portfolio')}
+                className="text-primary text-sm underline hover:no-underline"
+            >
+              View in Portfolio →
+            </button>
+          </div>,
+          {
+            duration: 6000,
+          }
+      );
+    } else {
+      toast.info("Vote failed.");
+    }
+      // Navigate back to proposals page
+      setTimeout(() => {
+          onNavigate('proposals');
+      }, 1000);
   };
 
   // const handleCancellationVote = (motionId: string, voteType: CancellationVoteType) => {
@@ -220,7 +355,9 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
   }
 
   // const convictionMultipliers = ['x2 (2 days)', 'x4 (4 days)', 'x8 (8 days)', 'x16 (16 days)', 'x32 (32 days)'];
-  const votingPower = parseInt(rootAmount || '0') * Math.pow(2, conviction[0]);
+  const convictionMultiplier = [1, 5, 11, 21, 34, 52];
+  const selectedConviction = conviction[0];
+  const votingPower = parseInt(rootAmount || '0') * (convictionMultiplier[selectedConviction] * selectedConviction);
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -252,7 +389,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
 
       {/* Title */}
       <h1 className="text-foreground text-4xl font-bold">
-        {referendum.title}
+        {referendum.title} #{referendum.id}
       </h1>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -371,7 +508,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-foreground font-bold">{referendum.proposer}</span>
                   <span className="text-xs text-muted-foreground">
-                    {referendum.status === 'Cancelled' ? 'Cancelled by Council' : `${referendum.daysLeft} days left`} | #{referendum.id}
+                    {referendum.status === 'Cancelled' ? 'Cancelled by Council' : `${referendum.daysLeft} left`} | #{referendum.id}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -389,7 +526,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
                 <div>
                   <h2 className="text-xl font-bold mb-4">TL;DR</h2>
                   <p className="text-base text-foreground">
-                    This referendum proposes a runtime upgrade to version 1.2.0, introducing new features and performance improvements to the Root Network.
+                    {p?.description}
                   </p>
                 </div>
 
@@ -397,28 +534,22 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
                   <h2 className="text-xl font-bold mb-4">Summary</h2>
                   <div className="space-y-4 text-base text-foreground">
                     <p>
-                      The proposed runtime upgrade includes several critical improvements to the Root Network infrastructure:
+                      {p?.summary}
                     </p>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>Enhanced cross-chain interoperability with improved bridge security</li>
-                      <li>Optimized consensus mechanism reducing block time by 15%</li>
-                      <li>New governance features for better community participation</li>
-                      <li>Updated economic model with refined staking rewards</li>
-                    </ul>
                   </div>
                 </div>
 
-                <div>
-                  <h2 className="text-xl font-bold mb-4">Technical Details</h2>
-                  <div className="space-y-4 text-base text-foreground">
-                    <p>
-                      The upgrade has been thoroughly tested on testnet environments and includes backward compatibility measures to ensure smooth transition.
-                    </p>
-                    <p>
-                      Key technical improvements include substrate runtime optimizations, enhanced RPC performance, and improved storage efficiency.
-                    </p>
-                  </div>
-                </div>
+                {/*<div>*/}
+                {/*  <h2 className="text-xl font-bold mb-4">Technical Details</h2>*/}
+                {/*  <div className="space-y-4 text-base text-foreground">*/}
+                {/*    <p>*/}
+                {/*      The upgrade has been thoroughly tested on testnet environments and includes backward compatibility measures to ensure smooth transition.*/}
+                {/*    </p>*/}
+                {/*    <p>*/}
+                {/*      Key technical improvements include substrate runtime optimizations, enhanced RPC performance, and improved storage efficiency.*/}
+                {/*    </p>*/}
+                {/*  </div>*/}
+                {/*</div>*/}
               </div>
             </div>
           </div>
@@ -476,27 +607,27 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
           </div>
 
           {/* Cancel Referendum Button - Council Members Only, Active Referendums Only */}
-          {isCouncilMember && referendum.status === 'Active' && !cancellationMotion && (
-            <div className="bg-card rounded-2xl p-5">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle size={16} className="text-red-400" />
-                  <h2 className="text-xl font-bold">Council Actions</h2>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  As a council member, you can propose to cancel this referendum.
-                </p>
-                <Button
-                  onClick={() => setShowCancelModal(true)}
-                  variant="outline"
-                  className="w-full bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
-                >
-                  <AlertTriangle size={16} className="mr-2" />
-                  Cancel Referendum
-                </Button>
-              </div>
-            </div>
-          )}
+          {/*{isCouncilMember && referendum.status === 'Active' && !cancellationMotion && (*/}
+          {/*  <div className="bg-card rounded-2xl p-5">*/}
+          {/*    <div className="space-y-4">*/}
+          {/*      <div className="flex items-center gap-2">*/}
+          {/*        <AlertTriangle size={16} className="text-red-400" />*/}
+          {/*        <h2 className="text-xl font-bold">Council Actions</h2>*/}
+          {/*      </div>*/}
+          {/*      <p className="text-sm text-muted-foreground">*/}
+          {/*        As a council member, you can propose to cancel this referendum.*/}
+          {/*      </p>*/}
+          {/*      <Button*/}
+          {/*        onClick={() => setShowCancelModal(true)}*/}
+          {/*        variant="outline"*/}
+          {/*        className="w-full bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"*/}
+          {/*      >*/}
+          {/*        <AlertTriangle size={16} className="mr-2" />*/}
+          {/*        Cancel Referendum*/}
+          {/*      </Button>*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*)}*/}
 
           {/* Cast Vote Card - Only show if referendum is active (not cancelled) */}
           {referendum.status === 'Active' && (
@@ -549,9 +680,27 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
                     </div>
                   </div>
                 )}
-
+                <Select
+                    value={account}
+                    onValueChange={(value) => { setAccount(value) }}
+                >
+                  <SelectTrigger className="bg-input-background border-border text-foreground">
+                    <SelectValue placeholder="Account">
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(accountType).map(([key, type]) => (
+                        <SelectItem key={key} value={key}>
+                          <div>
+                            <div className="font-medium">{type.label}</div>
+                            <div className="text-xs text-muted-foreground">{type.description}</div>
+                          </div>
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {/* Vote direction - Only for logged in users */}
-                {isLoggedIn && (
+                {userSession && (
                   <div className="flex gap-7">
                     <Button
                       onClick={() => setVoteDirection('aye')}
@@ -579,7 +728,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
                 )}
 
                 {/* Token amount - Only for logged in users */}
-                {isLoggedIn && (
+                {userSession && (
                   <div className="space-y-3">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
@@ -597,7 +746,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
                 )}
 
                 {/* Conviction slider - Only for logged in users */}
-                {isLoggedIn && (
+                {userSession && (
                   <div className="space-y-3">
                     <label className="text-xs text-muted-foreground">
                       Set Conviction
@@ -606,21 +755,26 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
                       <Slider
                         value={conviction}
                         onValueChange={setConviction}
-                        max={4}
-                        min={0}
+                        max={6}
+                        min={1}
                         step={1}
                         className="w-full"
                       />
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>x2 (2 days)</span>
-                        <span>x32 (32 days)</span>
+                        <span>x0 (0 week)</span>
+                        {/*<span>x1 (1 week)</span>*/}
+                        {/*<span>x2 (5 weeks)</span>*/}
+                        {/*<span>x3 (11 weeks)</span>*/}
+                        {/*<span>x4 (21 weeks)</span>*/}
+                        {/*<span>x5 (34 weeks)</span>*/}
+                        <span>x6 (52 weeks)</span>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* Submit button - Different for logged in vs logged out users */}
-                {isLoggedIn ? (
+                {userSession ? (
                   <Button
                     onClick={handleVoteSubmit}
                     className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-full py-3"
@@ -632,7 +786,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
                 )}
 
                 {/* Remove Vote Button (only show if user has existing vote and is logged in) */}
-                {isLoggedIn && existingVote && (
+                {userSession && existingVote && (
                   <Button
                     onClick={() => {
                       setExistingVote(null);
@@ -737,6 +891,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
 
       {/* Voting History Modal */}
       <VotingHistoryModal
+        referendum={referendum}
         isOpen={showVotingHistory}
         onClose={() => setShowVotingHistory(false)}
       />

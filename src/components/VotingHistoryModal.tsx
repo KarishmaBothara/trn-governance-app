@@ -2,53 +2,61 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dial
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { ArrowUp, ArrowDown } from 'lucide-react';
+import * as React from "react";
+import {useProposalInfo} from "@/hooks/useProposal";
+import {useVotes} from "@/hooks/useVotes";
+// import {Proposal} from "../../generated/prisma";
 const leftIcon = "/../imports/left_icon.png";
 
 interface VotingHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  referendum: any
 }
 
 // Mock voting history data
-const votingHistory = [
-  {
-    voter: 'FV Seona',
-    avatar: leftIcon,
-    votes: 2000,
-    delegated: 10,
-    vote: 'aye' as const,
-  },
-  {
-    voter: 'Alexander Chen',
-    avatar: leftIcon,
-    votes: 12000,
-    delegated: null,
-    vote: 'aye' as const,
-  },
-  {
-    voter: 'Maria Rodriguez',
-    avatar: leftIcon,
-    votes: 1000,
-    delegated: 25,
-    vote: 'nay' as const,
-  },
-  {
-    voter: 'David Kim',
-    avatar: leftIcon,
-    votes: 8000,
-    delegated: null,
-    vote: 'aye' as const,
-  },
-  {
-    voter: 'Sarah Thompson',
-    avatar: leftIcon,
-    votes: 4000,
-    delegated: null,
-    vote: 'aye' as const,
-  },
-];
+// const votingHistory = [
+//   {
+//     voter: 'FV Seona',
+//     avatar: leftIcon,
+//     votes: 2000,
+//     delegated: 10,
+//     vote: 'aye' as const,
+//   },
+//   {
+//     voter: 'Alexander Chen',
+//     avatar: leftIcon,
+//     votes: 12000,
+//     delegated: null,
+//     vote: 'aye' as const,
+//   },
+//   {
+//     voter: 'Maria Rodriguez',
+//     avatar: leftIcon,
+//     votes: 1000,
+//     delegated: 25,
+//     vote: 'nay' as const,
+//   },
+//   {
+//     voter: 'David Kim',
+//     avatar: leftIcon,
+//     votes: 8000,
+//     delegated: null,
+//     vote: 'aye' as const,
+//   },
+//   {
+//     voter: 'Sarah Thompson',
+//     avatar: leftIcon,
+//     votes: 4000,
+//     delegated: null,
+//     vote: 'aye' as const,
+//   },
+// ];
 
-export function VotingHistoryModal({ isOpen, onClose }: VotingHistoryModalProps) {
+export function VotingHistoryModal({ isOpen, referendum, onClose }: VotingHistoryModalProps) {
+  if (!referendum) return;
+  const { data: voteData } = useVotes(referendum.pId);
+  const votingHistory = voteData ? voteData : [];
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-card border-0 text-foreground p-0 gap-0 overflow-hidden flex flex-col">
@@ -69,15 +77,18 @@ export function VotingHistoryModal({ isOpen, onClose }: VotingHistoryModalProps)
           <div className="p-5 space-y-6">
             {/* Vote progress bar */}
             <div className="space-y-3">
-              <div className="w-full bg-green-400 h-2 rounded-full" />
+              <div className="flex w-full h-1.5 rounded-full overflow-hidden">
+              <div className="bg-green-400" style={{ width: `${referendum.ayePercentage}%` }} />
+              <div className="bg-red-400" style={{ width: `${referendum.nayPercentage}%` }} />
+              </div>
               <div className="flex justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <ArrowUp size={16} className="text-green-400" />
-                  <span className="text-green-400 font-bold">80% Aye</span>
+                  <span className="text-green-400 font-bold">{referendum.ayePercentage} Aye</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <ArrowDown size={16} className="text-red-400" />
-                  <span className="text-red-400 font-bold">20% Nay</span>
+                  <span className="text-red-400 font-bold">{referendum.nayPercentage} Nay</span>
                 </div>
               </div>
             </div>
@@ -98,11 +109,11 @@ export function VotingHistoryModal({ isOpen, onClose }: VotingHistoryModalProps)
             {/* Voting History section */}
             <div className="space-y-4">
               <h3 className="text-foreground">Voting History</h3>
-              
+
               <div className="space-y-3">
                 {votingHistory.map((vote, index) => (
-                  <Card 
-                    key={index} 
+                  <Card
+                    key={index}
                     className="bg-card border border-border transition-all duration-200 hover:border-white/80"
                   >
                     <CardContent className="pt-5 pr-5 pb-5">
@@ -120,7 +131,7 @@ export function VotingHistoryModal({ isOpen, onClose }: VotingHistoryModalProps)
                               </span>
                             </div>
                           </div>
-                        
+
                         <div className="flex items-center gap-6">
                           <div className="text-right">
                             <p className="text-xs text-muted-foreground">Votes</p>

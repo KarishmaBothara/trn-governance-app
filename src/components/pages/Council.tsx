@@ -19,10 +19,31 @@ import {
 import { mockMotions, mockCouncilMembers, mockCancellationMotions } from '../council/mockData';
 import { MotionCard } from '../council/MotionCard';
 import { CouncilMemberCard } from '../council/CouncilMemberCard';
-import { useUser } from '../UserContext';
+import { useTrnApi } from "@futureverse/transact-react";
+import { useCouncilMembers } from "@/hooks/useCouncilMembers";
+import {useCouncilProposals} from "@/hooks/useCouncilProposals";
+import {useEffect} from "react";
+import {useAuth} from "@futureverse/auth-react";
+import {useSigner} from "@/hooks/useSigner";
+import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
+import {useWeight} from "@/hooks/useWeight";
+import {closeVote, vote} from "@/lib/utils";
+import {ProposalType} from "../../../generated/prisma";
+import {useOldCouncilProposal} from "@/hooks/useOldCouncilProposal";
 
-export function Council({ onNavigate, onSelectProposal, onSelectMotion }: CouncilProps) {
-  const { isCouncilMember, isLoggedIn } = useUser();
+export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCouncilMember }: CouncilProps) {
+  const { userSession } = useAuth();
+  const eoa = userSession?.eoa;
+  const fpass = userSession?.futurepass;
+  const signer = useSigner();
+  const { trnApi } = useTrnApi();
+  const builder = useCustomExtrinsicBuilder({
+    signer,
+    walletAddress: userSession?.eoa ?? "",
+    trnApi,
+  });
+  // const { isCouncilMember, isLoggedIn } = useUser();
+  const [isCouncilMember, setIsCouncilMember] = useState(false);
   const [activeTab, setActiveTab] = useState<CouncilTab>('overview');
   const [activeMotionStatus, setActiveMotionStatus] = useState<MotionStatus>('proposed');
   const [showVoteModal, setShowVoteModal] = useState(false);
@@ -31,35 +52,89 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion }: Counci
   const [showCouncilorModal, setShowCouncilorModal] = useState(false);
   const [userVotes, setUserVotes] = useState<UserVote[]>([]);
   const [cancellationVotes, setCancellationVotes] = useState<CancellationVote[]>([]);
+  const { data: councilMembers } = useCouncilMembers();
+  const { data: proposalDBInfo } = useCouncilProposals();
+  const { data: oldProposals } = useOldCouncilProposal();
+
+  console.log("Inside council............", proposalDBInfo);
 
   // Redirect non-council members away from propose tab
   if (activeTab === 'propose' && !isCouncilMember) {
     setActiveTab('overview');
   }
 
-  const handleVote = (motionId: string, voteType: VoteType) => {
-    const existingVoteIndex = userVotes.findIndex(vote => vote.motionId === motionId);
-
-    if (existingVoteIndex >= 0) {
-      const existingVote = userVotes[existingVoteIndex];
-      if (existingVote.voteType === voteType) {
-        // Remove vote if clicking the same action
-        setUserVotes(prev => prev.filter(vote => vote.motionId !== motionId));
-        toast.success(`Vote removed for motion ${motionId}`);
-      } else {
-        // Change vote type
-        setUserVotes(prev => prev.map(vote =>
-          vote.motionId === motionId
-            ? { ...vote, voteType }
-            : vote
-        ));
-        toast.success(`Vote changed to ${voteType === 'second' ? 'second' : 'close'} for motion ${motionId}`);
+  useEffect(() => {
+    if (councilMembers && eoa && fpass) {
+      const exist = councilMembers.find(cm => cm.address.toLowerCase() === eoa.toLowerCase() || cm.address.toLowerCase() === fpass.toLowerCase())
+      if (exist) {
+        setIsCouncilMember(true);
       }
-    } else {
-      // Add new vote
-      setUserVotes(prev => [...prev, { motionId, voteType }]);
-      toast.success(`Successfully voted to ${voteType === 'second' ? 'second' : 'close'} motion ${motionId}`);
     }
+  }, [councilMembers, eoa, fpass]);
+
+
+  const handleVote = async (motion: any, aye: boolean, accountType: string) => {
+    if (!signer || !userSession || !trnApi || !builder) return;
+    const extrinsic = trnApi.tx.council.vote(motion.hash || motion.preimage, motion?.idx, aye);
+
+    const tx = accountType === 'FPass' ? await builder
+        .fromExtrinsic(extrinsic)
+        .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+
+    const status = await vote(tx, toast, motion.id);
+
+    if (status) {
+      toast.success('Proposal voted successfully!', {
+        description: `Your proposal "${motion.title}" has been updated with votes.`,
+        duration: 5000,
+      });
+    } else {
+      toast.success('Proposal vote unsuccessful!', {
+        description: `Your proposal voting did not complete`,
+        duration: 5000,
+      });
+    }
+    // Navigate back to proposals page
+    setTimeout(() => {
+      if (motion.type === ProposalType.Democracy) {
+        onNavigate('proposals');
+      } else {
+        onNavigate('council');
+      }
+    }, 1000);
+
+    }
+
+  const handleCloseVote = async (motion: any, encodedCallLength: number, weight: any, voteType: VoteType, accountType: string) => {
+    if (!signer || !userSession || !trnApi || !builder) return;
+    const extrinsic = trnApi.tx.council.close(motion.hash || motion.preimage, motion?.idx, weight, encodedCallLength);
+
+    const tx = accountType === 'FPass' ? await builder
+      .fromExtrinsic(extrinsic)
+      .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+
+    const status = await closeVote(tx, toast, motion.id);
+
+    if (status) {
+      toast.success('Proposal closed successfully!', {
+        description: `Your proposal "${motion.title}" has been closed and ${status}.`,
+        duration: 5000,
+      });
+    } else {
+      toast.success('Proposal closure unsuccessful!', {
+        description: `Your proposal "${motion.title}" has been closed and ${status}.`,
+        duration: 5000,
+      });
+    }
+    // Navigate back to proposals page
+    setTimeout(() => {
+      if (motion.type === ProposalType.Democracy) {
+        onNavigate('proposals');
+      } else {
+        onNavigate('council');
+      }
+    }, 1000);
+
   };
 
   const handleCancellationVote = (motionId: string, voteType: CancellationVoteType) => {
@@ -104,7 +179,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion }: Counci
               </p>
             </div>
             <div className="flex items-center gap-4">
-              {isLoggedIn && (
+              {userSession && (
                 <Button
                   onClick={() => setShowVoteModal(true)}
                 >
@@ -183,8 +258,9 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion }: Counci
     );
   }
 
-  const filteredMotions = mockMotions.filter(motion => motion.status === activeMotionStatus);
-  const activeCancellationMotions = mockCancellationMotions.filter(motion => motion.status === 'active');
+  const filteredMotions = proposalDBInfo?.filter(p => p.id !== undefined && p.status === "Processing");//mockMotions.filter(motion => motion.status === activeMotionStatus);
+  console.log('filteredMotions::',filteredMotions);
+  // const activeCancellationMotions = mockCancellationMotions.filter(motion => motion.status === 'active');
 
   return (
     <div className="space-y-8">
@@ -198,7 +274,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion }: Counci
             </p>
           </div>
           <div className="flex items-center gap-4">
-            {isLoggedIn && (
+            {userSession && (
               <Button
                 onClick={() => onNavigate('elections')}
               >
@@ -298,7 +374,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion }: Counci
           <div className="space-y-4">
             <h2 className="text-foreground">Council Members</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {mockCouncilMembers.map((member) => (
+              {councilMembers && councilMembers.map((member) => (
                 <CouncilMemberCard
                   key={member.id}
                   member={member}
@@ -316,16 +392,17 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion }: Counci
       {activeTab === 'pipeline' && (
         <div className="space-y-8">
           {/* Active Cancellation Motions Section - Council Members Only */}
-          {isCouncilMember && activeCancellationMotions.length > 0 && (
+          {oldProposals &&
+              oldProposals.length > 0 && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-foreground">Active Cancellation Motions</h2>
+                <h2 className="text-foreground">Closed Motions</h2>
                 <div className="text-sm text-muted-foreground">
-                  {activeCancellationMotions.length} referendum{activeCancellationMotions.length !== 1 ? 's' : ''} under cancellation review
+                  {oldProposals.length} referendum{oldProposals.length !== 1 ? 's' : ''} under cancellation review
                 </div>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {activeCancellationMotions.map((motion) => (
+                {oldProposals.map((motion) => (
                   <CancellationMotionCard
                     key={motion.id}
                     motion={motion}
@@ -366,15 +443,17 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion }: Counci
           {/* Motions Grid */}
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredMotions.map((motion) => (
+              {filteredMotions && filteredMotions.map((motion) => (
                 <MotionCard
                   key={motion.id}
                   motion={motion}
                   userVotes={userVotes}
+                  onClose={handleCloseVote}
                   onVote={handleVote}
                   isCouncilMember={isCouncilMember}
                   onNavigate={onNavigate}
                   onSelectMotion={onSelectMotion}
+                  setIfCouncilMember={setIfCouncilMember}
                 />
               ))}
             </div>

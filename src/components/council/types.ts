@@ -1,8 +1,10 @@
 import { NavigationItem } from '@/app/page';
+import {V2WeightConstruct} from "@/hooks/useWeight";
 
 export type MotionStatus = 'proposed' | 'voting' | 'passed' | 'rejected' | 'cancelled';
 export type VoteType = 'second' | 'close' | 'aye' | 'nay' | 'abstain';;
 export type CancellationVoteType = 'cancel' | 'against';
+import type { BN } from '@polkadot/util';
 
 export interface UserVote {
   motionId: string;
@@ -29,6 +31,9 @@ export interface CancellationMotion {
 }
 
 export interface Motion {
+  encodedCallLength: number;
+  weight: BN | V2WeightConstruct;
+  timeRemaining: string;
   id: string;
   title: string;
   status: MotionStatus;
@@ -99,5 +104,6 @@ export type CouncilTab = 'overview' | 'pipeline' | 'propose';
 export interface CouncilProps {
   onNavigate: (page: NavigationItem) => void;
   onSelectProposal: (id: string) => void;
-  onSelectMotion: (id: string) => void;
+  onSelectMotion: (id: Motion) => void;
+  setIsCouncilMember: (isMem: true) => void;
 }

@@ -8,137 +8,216 @@ import { toast } from 'sonner';
 import { useUser } from '../UserContext';
 import { mockMotions } from '../council/mockData';
 import { Motion, VoteType, UserVote } from '../council/types';
+import {useCouncilProposals} from "@/hooks/useCouncilProposals";
+import {useBlockTime} from "@/hooks/useBlockTime";
+import {useTrnApi} from "@futureverse/transact-react";
+import {useAuth} from "@futureverse/auth-react";
+// import {SelectContent, SelectItem} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import {useSigner} from "@/hooks/useSigner";
+import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
+import {ProposalStatus, ProposalType} from "../../../generated/prisma";
+import {closeVote, vote} from "@/lib/utils";
 
 interface MotionDetailProps {
-  motionId: string | null;
+  motion: Motion | null;
+  isCouncilMember: boolean;
   onNavigate: (page: NavigationItem) => void;
 }
 
-export function MotionDetail({ motionId, onNavigate }: MotionDetailProps) {
-  const { isCouncilMember, isLoggedIn } = useUser();
+export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDetailProps) {
+  // const { isCouncilMember, isLoggedIn } = useUser();
+  const { userSession } = useAuth();
+  const signer = useSigner();
+  const { trnApi } = useTrnApi();
+  const builder = useCustomExtrinsicBuilder({
+    signer,
+    walletAddress: userSession?.eoa ?? "",
+    trnApi,
+  });
   const [userVotes, setUserVotes] = useState<UserVote[]>([]);
+  const [account, setAccount] = useState<string>('EOA');
   const [timeRemaining, setTimeRemaining] = useState<string>('');
 
   // Find the motion by ID (in real app this would fetch from API)
-  const motion = mockMotions.find(m => m.id === motionId);
+  // const motion = mockMotions.find(m => m.id === motionId);
+  console.log("motion::",motion);
 
-
-  // Mock detailed motion data
-  const detailedMotion: Motion | null = motion ? {
-    ...motion,
-    description: "This motion proposes critical updates to the network parameter configuration to enhance security and performance of the Root Network infrastructure.",
-    details: `This comprehensive motion addresses several key areas of network optimization:
-
-1. **Security Enhancements**: Implementation of additional validation layers for cross-chain transactions
-2. **Performance Improvements**: Optimization of consensus mechanisms to reduce block finalization time
-3. **Resource Management**: Updated fee structure for more efficient network resource allocation
-
-The proposed changes have been thoroughly tested on the testnet environment and have shown significant improvements in transaction throughput while maintaining network security standards.`,
-    hash: "0x742d35cc6ba34c432d34c432d34c432d34c432d34c43",
-    module: "Council",
-    call: "propose",
-    submittedDate: "15 July 2025",
-    discordLink: "#motion-discussion-1",
-    timeline: [
-      {
-        event: "Motion Proposed",
-        date: "15 July 2025",
-        completed: true
-      },
-      {
-        event: "Seconding Period",
-        date: "In Progress",
-        completed: false
-      },
-      {
-        event: "Voting Period",
-        date: "Pending",
-        completed: false
-      },
-      {
-        event: "Execution",
-        date: "Pending",
-        completed: false
-      }
-    ]
-  } : null;
-
-  // Countdown timer effect
-  useEffect(() => {
-    if (!detailedMotion?.remainingTimeMs || detailedMotion.status === 'cancelled' || detailedMotion.remainingTimeMs <= 0) return;
-
-    const updateTimer = () => {
-      const remaining = detailedMotion.remainingTimeMs;
-
-      if (remaining <= 0) {
-        setTimeRemaining('Expired');
-        return;
-      }
-
-      const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-
-      if (days > 0) {
-        setTimeRemaining(`${days}d ${hours}h`);
-      } else if (hours > 0) {
-        setTimeRemaining(`${hours}h ${minutes}m`);
-      } else if (minutes > 0) {
-        setTimeRemaining(`${minutes}m`);
-      } else {
-        setTimeRemaining('< 1m');
-      }
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 60000); // Update every minute
-
-    return () => clearInterval(interval);
-  }, [detailedMotion?.remainingTimeMs, detailedMotion?.status]);
-
-  const handleVote = (voteType: VoteType) => {
-    if (!motionId || !isCouncilMember) return;
-
-    const existingVoteIndex = userVotes.findIndex(vote => vote.motionId === motionId);
-
-    if (existingVoteIndex >= 0) {
-      const existingVote = userVotes[existingVoteIndex];
-      if (existingVote.voteType === voteType) {
-        // Remove vote if clicking the same action
-        setUserVotes(prev => prev.filter(vote => vote.motionId !== motionId));
-        toast.success(`Vote removed for motion ${motionId}`);
-      } else {
-        // Change vote type
-        setUserVotes(prev => prev.map(vote =>
-          vote.motionId === motionId
-            ? { ...vote, voteType }
-            : vote
-        ));
-
-        const voteTypeLabel = voteType === 'second' ? 'second' :
-                             voteType === 'close' ? 'close' :
-                             voteType === 'aye' ? 'support' : 'oppose';
-        toast.success(`Vote changed to ${voteTypeLabel} for motion ${motionId}`);
-      }
-    } else {
-      // Add new vote
-      setUserVotes(prev => [...prev, { motionId, voteType }]);
-
-      const voteTypeLabel = voteType === 'second' ? 'second' :
-                           voteType === 'close' ? 'close' :
-                           voteType === 'aye' ? 'support' : 'oppose';
-      toast.success(`Successfully voted to ${voteTypeLabel} motion ${motionId}`);
-    }
+  const accountType = {
+    'FPass': { label: 'FPass', description: 'Use futurepass address' },
+    'EOA': { label: 'EOA', description: 'Use eoa address' },
   };
 
-  const handleCancelMotion = () => {
-    if (!motionId || !isCouncilMember || !detailedMotion?.canCancel) return;
+  const handleCloseVote = async () => {
+    console.log("Close vote..");
+    if (!signer || !userSession || !trnApi || !builder) return;
+    const extrinsic = trnApi.tx.council.close(motion.hash || motion.preimage, motion?.idx, motion.weight, motion.encodedCallLength );
 
-    toast.success(`Motion ${motionId} has been cancelled`);
+    const tx = account === 'FPass' ? await builder
+        .fromExtrinsic(extrinsic)
+        .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+    const status = await closeVote(tx, toast, motion.id);
+
+    if (status) {
+      toast.success('Proposal closed successfully!', {
+        description: `Your proposal "${motion.title}" has been closed and ${status}.`,
+        duration: 5000,
+      });
+    } else {
+      toast.success('Proposal closure unsuccessful!', {
+        description: `Your proposal "${motion.title}" has been closed and ${status}.`,
+        duration: 5000,
+      });
+    }
+    // Navigate back to proposals page
+    setTimeout(() => {
+      if (motion.type === ProposalType.Democracy) {
+        onNavigate('proposals');
+      } else {
+        onNavigate('council');
+      }
+    }, 1000);
+  };
+
+
+  const timeline = motion ? [
+      {
+        event: "Motion Proposed",
+        date: motion.createdAt,
+        completed: true
+      },
+      // {
+      //   event: "Seconding Period",
+      //   date: "In Progress",
+      //   completed: false
+      // },
+      {
+        event: "Voting Period",
+        date: motion.timeRemaining === "0 s" ? "End" : "Pending",
+        completed: motion.timeRemaining === "0 s" ? true : false
+      }
+      ] : [];
+
+  // useCouncilProposals
+  // Mock detailed motion data
+  const detailedMotion: Motion | null = motion;
+      // ? {
+    // ...motion,
+//     description: "This motion proposes critical updates to the network parameter configuration to enhance security and performance of the Root Network infrastructure.",
+//     details: `This comprehensive motion addresses several key areas of network optimization:
+//
+// 1. **Security Enhancements**: Implementation of additional validation layers for cross-chain transactions
+// 2. **Performance Improvements**: Optimization of consensus mechanisms to reduce block finalization time
+// 3. **Resource Management**: Updated fee structure for more efficient network resource allocation
+//
+// The proposed changes have been thoroughly tested on the testnet environment and have shown significant improvements in transaction throughput while maintaining network security standards.`,
+//     hash: "0x742d35cc6ba34c432d34c432d34c432d34c432d34c43",
+//     module: "Council",
+//     call: "propose",
+//     submittedDate: "15 July 2025",
+//     discordLink: "#motion-discussion-1",
+//     timeline: [
+//       {
+//         event: "Motion Proposed",
+//         date: "15 July 2025",
+//         completed: true
+//       },
+//       {
+//         event: "Seconding Period",
+//         date: "In Progress",
+//         completed: false
+//       },
+//       {
+//         event: "Voting Period",
+//         date: "Pending",
+//         completed: false
+//       },
+//       {
+//         event: "Execution",
+//         date: "Pending",
+//         completed: false
+//       }
+//     ]
+//   } : null;
+
+
+  // Countdown timer effect
+  // useEffect(() => {
+  //   if (!detailedMotion?.remainingTimeMs || detailedMotion.status === 'cancelled' || detailedMotion.remainingTimeMs <= 0) return;
+  //
+  //   const updateTimer = () => {
+  //     const remaining = detailedMotion.remainingTimeMs;
+  //
+  //     if (remaining <= 0) {
+  //       setTimeRemaining('Expired');
+  //       return;
+  //     }
+  //
+  //     const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+  //     const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  //     const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+  //
+  //     if (days > 0) {
+  //       setTimeRemaining(`${days}d ${hours}h`);
+  //     } else if (hours > 0) {
+  //       setTimeRemaining(`${hours}h ${minutes}m`);
+  //     } else if (minutes > 0) {
+  //       setTimeRemaining(`${minutes}m`);
+  //     } else {
+  //       setTimeRemaining('< 1m');
+  //     }
+  //   };
+  //
+  //   updateTimer();
+  //   const interval = setInterval(updateTimer, 60000); // Update every minute
+  //
+  //   return () => clearInterval(interval);
+  // }, [detailedMotion?.remainingTimeMs, detailedMotion?.status]);
+
+  const handleVote = async(aye: boolean) => {
+    if (!motion.idx || !isCouncilMember) return;
+    if (!signer || !userSession || !trnApi || !builder) return;
+    const extrinsic = trnApi.tx.council.vote(motion.hash || motion.preimage, motion?.idx, aye);
+
+    const tx = account === 'FPass' ? await builder
+          .fromExtrinsic(extrinsic)
+          .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+
+    const status = await vote(tx, toast, motion.id);
+
+    if (status) {
+      toast.success('Proposal voted successfully!', {
+        description: `Your proposal "${motion.title}" has been updated with votes.`,
+        duration: 5000,
+      });
+    } else {
+      toast.success('Proposal vote unsuccessful!', {
+        description: `Your proposal voting did not complete`,
+        duration: 5000,
+      });
+    }
+      // Navigate back to proposals page
+    setTimeout(() => {
+      if (motion.type === ProposalType.Democracy) {
+        onNavigate('proposals');
+      } else {
+        onNavigate('council');
+      }
+    }, 1000);
+
+  }
+
+
+
+
+  const handleCancelMotion = () => {
+    if (!motion.idx || !isCouncilMember || !detailedMotion?.canCancel) return;
+
+    toast.success(`Motion ${motion.idx} has been cancelled`);
     // In a real app, this would update the motion status
   };
 
-  if (!motionId) {
+  if (!motion.idx) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">No motion selected</p>
@@ -160,7 +239,7 @@ The proposed changes have been thoroughly tested on the testnet environment and 
     );
   }
 
-  const userVote = userVotes.find(vote => vote.motionId === motionId);
+  const userVote = userVotes.find(vote => vote.motionId === motion.idx);
   const hasSecondedMotion = userVote?.voteType === 'second';
   const hasVotedToClose = userVote?.voteType === 'close';
   const hasVotedAye = userVote?.voteType === 'aye' || detailedMotion?.userVote === 'aye';
@@ -192,9 +271,9 @@ The proposed changes have been thoroughly tested on the testnet environment and 
               {/* Header with meta info */}
               <div className="flex items-start justify-between border-b border-border pb-6">
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs text-foreground font-bold">{detailedMotion.proposer.name}</span>
+                  <span className="text-xs text-foreground font-bold">{detailedMotion.proposer}</span>
                   <span className="text-xs text-muted-foreground">
-                    {timeRemaining || `${detailedMotion.daysLeft} days left`} | {detailedMotion.proposalNumber}
+                    {detailedMotion.timeRemaining || `${detailedMotion.daysLeft} days left`} left | #{detailedMotion.idx}
                   </span>
                 </div>
                 <Badge className="bg-chart-1/20 text-chart-1 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded">
@@ -214,7 +293,7 @@ The proposed changes have been thoroughly tested on the testnet environment and 
                 <div>
                   <h2 className="text-xl font-bold mb-4">Details</h2>
                   <div className="space-y-4 text-base text-foreground">
-                    {detailedMotion.details?.split('\n\n').map((paragraph, index) => (
+                    {detailedMotion.summary?.split('\n\n').map((paragraph, index) => (
                       <p key={index}>{paragraph}</p>
                     ))}
                   </div>
@@ -241,17 +320,17 @@ The proposed changes have been thoroughly tested on the testnet environment and 
 
               <div className="flex gap-5">
                 <div className="flex flex-col items-center">
-                  {detailedMotion.timeline?.map((_, index) => (
+                  {timeline?.map((_, index) => (
                     <div
                       key={index}
                       className={`w-1.5 h-24 rounded-full ${
-                        detailedMotion.timeline![index].completed ? 'bg-primary' : 'bg-muted'
+                        timeline![index].completed ? 'bg-primary' : 'bg-muted'
                       }`}
                     />
                   ))}
                 </div>
                 <div className="space-y-14">
-                  {detailedMotion.timeline?.map((item, index) => (
+                  {timeline?.map((item, index) => (
                     <div key={index}>
                       <h3 className="text-base text-foreground">{item.event}</h3>
                       <p className="text-xs text-muted-foreground font-bold">{item.date}</p>
@@ -273,20 +352,24 @@ The proposed changes have been thoroughly tested on the testnet environment and 
                 <div className="flex items-center gap-3">
                   <span className="text-base text-foreground">Hash</span>
                   <span className="text-xs text-muted-foreground font-bold">
-                    {detailedMotion.hash}
+                    {detailedMotion.hash || detailedMotion.preimage}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-base text-foreground">Module</span>
-                  <span className="text-xs text-muted-foreground font-bold">{detailedMotion.module}</span>
+                  <span className="text-xs text-muted-foreground font-bold">{detailedMotion.section}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-base text-foreground">Call</span>
-                  <span className="text-xs text-muted-foreground font-bold">{detailedMotion.call}</span>
+                  <span className="text-xs text-muted-foreground font-bold">{detailedMotion.method}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-base text-foreground">Args</span>
+                  <span className="text-xs text-muted-foreground font-bold">[{detailedMotion.args}]</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-base text-foreground">Submitted</span>
-                  <span className="text-xs text-muted-foreground font-bold">{detailedMotion.submittedDate}</span>
+                  <span className="text-xs text-muted-foreground font-bold">{detailedMotion.createdAt}</span>
                 </div>
               </div>
             </div>
@@ -327,16 +410,41 @@ The proposed changes have been thoroughly tested on the testnet environment and 
               )}
 
               {/* Votes Needed */}
-              {detailedMotion.votesNeededToPass && (
+              {detailedMotion.threshold && (
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Votes Needed to Pass</span>
                     <span className="text-sm font-bold text-foreground">
-                      {detailedMotion.votesNeededToPass}
+                      {detailedMotion.threshold}
                     </span>
                   </div>
                 </div>
               )}
+
+              <div className="space-y-3">
+                {/*<label className="text-sm text-foreground">*/}
+                {/*  What type of proposal are you making?*/}
+                {/*</label>*/}
+                <Select
+                    value={account}
+                    onValueChange={(value) => { setAccount(value) }}
+                >
+                  <SelectTrigger className="bg-input-background border-border text-foreground">
+                    <SelectValue placeholder="Choose proposal type">
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(accountType).map(([key, type]) => (
+                        <SelectItem key={key} value={key}>
+                          <div>
+                            <div className="font-medium">{type.label}</div>
+                            <div className="text-xs text-muted-foreground">{type.description}</div>
+                          </div>
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Seconding Progress */}
               <div className="space-y-3">
@@ -361,7 +469,7 @@ The proposed changes have been thoroughly tested on the testnet environment and 
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Council Votes</span>
                   <span className="text-sm font-bold text-foreground">
-                    {detailedMotion.votedMembers}/{detailedMotion.totalMembers}
+                    {motion.totalVotes}/{motion.threshold}
                   </span>
                 </div>
                 <div className="flex w-full h-1.5 rounded-full overflow-hidden">
@@ -418,24 +526,25 @@ The proposed changes have been thoroughly tested on the testnet environment and 
                   {/* Action Buttons */}
                   <div className="space-y-3">
                     {/* Second Motion Button */}
-                    <Button
-                      className={`w-full h-10 ${hasSecondedMotion ? 'bg-primary text-primary-foreground' : ''}`}
-                      variant={hasSecondedMotion ? "default" : "outline"}
-                      onClick={() => handleVote('second')}
-                      disabled={detailedMotion.status === 'cancelled'}
-                    >
-                      {hasSecondedMotion ? '✓ Seconded' : `Second Motion (${detailedMotion.secondsReceived}/${detailedMotion.secondsNeeded})`}
-                    </Button>
+                    {/*<Button*/}
+                    {/*  className={`w-full h-10 ${hasSecondedMotion ? 'bg-primary text-primary-foreground' : ''}`}*/}
+                    {/*  variant={hasSecondedMotion ? "default" : "outline"}*/}
+                    {/*  onClick={() => handleVote('second')}*/}
+                    {/*  disabled={detailedMotion.status === 'cancelled'}*/}
+                    {/*>*/}
+                    {/*  {hasSecondedMotion ? '✓ Seconded' : `Second Motion (${detailedMotion.secondsReceived}/${detailedMotion.secondsNeeded})`}*/}
+                    {/*</Button>*/}
+
 
                     {/* Voting Buttons - Only show if motion has enough seconds */}
-                    {detailedMotion.secondsReceived >= detailedMotion.secondsNeeded && (
+                    {isCouncilMember && (
                       <>
                         <div className="flex gap-2">
                           <Button
                             className={`flex-1 h-10 ${hasVotedAye ? 'bg-green-600 text-white' : ''}`}
                             variant={hasVotedAye ? "default" : "outline"}
-                            onClick={() => handleVote('aye')}
-                            disabled={detailedMotion.status === 'cancelled'}
+                            onClick={() => handleVote(true)}
+                            disabled={detailedMotion.status === 'Cancelled' || detailedMotion.timeRemaining === '0 s'}
                           >
                             <ArrowUp size={16} className="mr-1" />
                             {hasVotedAye ? '✓ Aye' : 'Vote Aye'}
@@ -443,8 +552,8 @@ The proposed changes have been thoroughly tested on the testnet environment and 
                           <Button
                             className={`flex-1 h-10 ${hasVotedNay ? 'bg-red-600 text-white' : ''}`}
                             variant={hasVotedNay ? "default" : "outline"}
-                            onClick={() => handleVote('nay')}
-                            disabled={detailedMotion.status === 'cancelled'}
+                            onClick={() => handleVote(false)}
+                            disabled={detailedMotion.status === 'Cancelled' || detailedMotion.timeRemaining === '0 s'}
                           >
                             <ArrowDown size={16} className="mr-1" />
                             {hasVotedNay ? '✓ Nay' : 'Vote Nay'}
@@ -466,7 +575,7 @@ The proposed changes have been thoroughly tested on the testnet environment and 
                               variant="outline"
                               className="flex-1 h-10"
                               onClick={() => {
-                                setUserVotes(prev => prev.filter(vote => vote.motionId !== motionId));
+                                setUserVotes(prev => prev.filter(vote => vote.motionId !== motion.idx));
                                 toast.success('Support withdrawn');
                               }}
                               disabled={detailedMotion.status === 'cancelled'}
@@ -494,16 +603,16 @@ The proposed changes have been thoroughly tested on the testnet environment and 
                     <Button
                       className={`w-full h-10 ${hasVotedToClose ? 'bg-destructive text-destructive-foreground' : ''}`}
                       variant={hasVotedToClose ? "default" : "outline"}
-                      onClick={() => handleVote('close')}
-                      disabled={detailedMotion.status === 'cancelled'}
+                      onClick={() => handleCloseVote()}
+                      disabled={detailedMotion.status === 'Cancelled' || timeRemaining !== '0 s'}
                     >
-                      {hasVotedToClose ? '✓ Voted to Close' : `Close Motion (${detailedMotion.votedMembers}/${detailedMotion.totalMembers})`}
+                      {hasVotedToClose ? '✓ Voted to Close' : `Close Motion (${motion.totalVotes}/${motion.threshold})`}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {!isLoggedIn ? (
+                  {!userSession ? (
                     <div className="text-center p-4 bg-muted/20 border border-border rounded-lg">
                       <p className="text-sm text-muted-foreground mb-3">
                         Connect your wallet to view available actions

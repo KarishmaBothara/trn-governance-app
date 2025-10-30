@@ -7,7 +7,13 @@ import { Slider } from './ui/slider';
 // import { X } from 'lucide-react';
 import { useUser } from './UserContext';
 import { ConnectWalletButton } from './ConnectWalletButton';
-
+import {useSigner} from "@/hooks/useSigner";
+import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
+import {useAuth} from "@futureverse/auth-react";
+import {useTrnApi} from "@futureverse/transact-react";
+import * as React from "react";
+import { toast } from 'sonner';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 interface Delegate {
   id: string;
   name: string;
@@ -38,23 +44,73 @@ interface DelegateVotingModalProps {
 
 export function DelegateVotingModal({ isOpen, onClose, delegate }: DelegateVotingModalProps) {
   const { isLoggedIn } = useUser();
-  const [delegateAddress, setDelegateAddress] = useState('74638829hfueh28282892');
+  const [delegateAddress, setDelegateAddress] = useState(delegate?.address);
   const [rootAmount, setRootAmount] = useState('200');
-  const [conviction, setConviction] = useState([2]); // 0-4 range for conviction slider
-
-  // const convictionLabels = ['x2 (2 days)', 'x4 (4 days)', 'x8 (8 days)', 'x16 (16 days)', 'x32 (32 days)'];
-  const votingPower = parseInt(rootAmount || '0') * Math.pow(2, conviction[0] + 1); // x2 to x32
-
-  const handleSubmit = () => {
-    // Handle delegation submission
-    console.log('Submitting delegation:', {
-      delegate: delegate?.name,
-      address: delegateAddress,
-      amount: rootAmount,
-      conviction: conviction[0],
-      votingPower
+  const [account, setAccount] = useState<string>('EOA');
+  // const [conviction, setConviction] = useState([2]); // 0-4 range for conviction slider
+  const { userSession } = useAuth();
+  const signer = useSigner();
+  const { trnApi } = useTrnApi();
+  const builder = useCustomExtrinsicBuilder({
+        signer,
+        walletAddress: userSession?.eoa ?? "",
+        trnApi,
     });
-    onClose();
+  const accountType = {
+    'FPass': { label: 'FPass', description: 'Use futurepass address' },
+    'EOA': { label: 'EOA', description: 'Use eoa address' },
+  };
+  // const convictionLabels = ['x2 (2 days)', 'x4 (4 days)', 'x8 (8 days)', 'x16 (16 days)', 'x32 (32 days)'];
+  // const votingPower = parseInt(rootAmount || '0') * Math.pow(2, conviction[0] + 1); // x2 to x32
+
+  const handleSubmit = async () => {
+    // Handle delegation submission
+      // const convictionMultipliers = ['x2 (2 days)', 'x4 (4 days)', 'x8 (8 days)', 'x16 (16 days)', 'x32 (32 days)'];
+
+    const extrinsic = trnApi.tx.democracy.delegate(delegateAddress, rootAmount);
+
+    const tx = account === 'FPass' ? await builder
+        .fromExtrinsic(extrinsic)
+        .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+
+
+    const res = await tx.signAndSend({
+      onSign: () => {
+        // setTxStatus("signing");
+        toast.success(
+            <div className="space-y-2">
+              <div className="font-medium">
+                {'Delegate submitted successfully!'}
+              </div>
+            </div>,
+            {
+              duration: 6000,
+            }
+        );
+      },
+      onSend: async () => {
+      }
+    });
+    console.log("Extrinsic Result::",res);
+    const { extrinsicId, transactionHash, result } = res;
+    const event = result?.events.find((event) => {
+      if (!("event" in event)) return event.name === "democracy.Delegated";
+
+      return event.event.section === "democracy" && event.event.method === "Delegated";
+    });
+   if (event) {
+     toast.success(
+         <div className="space-y-2">
+           <div className="font-medium">
+             {`Delegate ${delegate?.name} added successfully!`}
+           </div>
+         </div>,
+         {
+           duration: 6000,
+         }
+     );
+   }
+   onClose();
   };
 
   if (!delegate) return null;
@@ -89,10 +145,36 @@ export function DelegateVotingModal({ isOpen, onClose, delegate }: DelegateVotin
                 value={delegateAddress}
                 onChange={(e) => setDelegateAddress(e.target.value)}
                 className="bg-transparent border-0 p-0 text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
-                placeholder="74638829hfueh28282892"
+                placeholder={delegate.address}
               />
             </div>
           </div>
+
+
+            <div className="space-y-3">
+              <label className="text-sm text-foreground">
+                Account type
+              </label>
+              <Select
+                  value={account}
+                  onValueChange={(value) => { setAccount(value) }}
+              >
+                <SelectTrigger className="bg-input-background border-border text-foreground">
+                  <SelectValue placeholder="Choose proposal type">
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(accountType).map(([key, type]) => (
+                      <SelectItem key={key} value={key}>
+                        <div>
+                          <div className="font-medium">{type.label}</div>
+                          <div className="text-xs text-muted-foreground">{type.description}</div>
+                        </div>
+                      </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
           {/* Root Amount */}
           <div className="space-y-1">
@@ -108,33 +190,33 @@ export function DelegateVotingModal({ isOpen, onClose, delegate }: DelegateVotin
           </div>
 
           {/* Conviction Slider */}
-          <div className="space-y-3">
-            <Label className="text-sm text-muted-foreground">Set Conviction</Label>
-            <div className="space-y-3">
-              <div className="px-3">
-                <Slider
-                  value={conviction}
-                  onValueChange={setConviction}
-                  max={4}
-                  min={0}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground px-3">
-                <span>x2 (2 days)</span>
-                <span>x32 (32 days)</span>
-              </div>
-            </div>
-          </div>
+          {/*<div className="space-y-3">*/}
+          {/*  <Label className="text-sm text-muted-foreground">Set Conviction</Label>*/}
+          {/*  <div className="space-y-3">*/}
+          {/*    <div className="px-3">*/}
+          {/*      <Slider*/}
+          {/*        value={conviction}*/}
+          {/*        onValueChange={setConviction}*/}
+          {/*        max={6}*/}
+          {/*        min={1}*/}
+          {/*        step={1}*/}
+          {/*        className="w-full"*/}
+          {/*      />*/}
+          {/*    </div>*/}
+          {/*    <div className="flex justify-between text-xs text-muted-foreground px-3">*/}
+          {/*      <span>x2 (2 days)</span>*/}
+          {/*      <span>x32 (32 days)</span>*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*</div>*/}
 
           {/* Submit Button */}
-          {isLoggedIn ? (
+          {userSession ? (
             <Button
               onClick={handleSubmit}
               className="bg-primary text-primary-foreground w-full rounded-[1000px] py-3 font-bold"
             >
-              Submit {votingPower} Votes
+              Submit Votes
             </Button>
           ) : (
             <ConnectWalletButton className="w-full rounded-[1000px] py-3" />
