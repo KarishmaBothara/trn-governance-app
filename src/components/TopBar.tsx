@@ -21,11 +21,9 @@ interface TopBarProps {
 export function TopBar({ onMobileMenuToggle }: TopBarProps) {
   // const { isLoggedIn } = useUser();
   const signer = useSigner();
-  console.log("Signer in TopBar::", signer);
-  
+
   const { userSession } = useAuth();
   const { data: rootBalance, /*isLoading*/ } = useRootBalanceInfo();
-  console.log("userSession.user::",userSession?.user);
   let address: string = "";
   let fpassAddress: string = "";
   let profileName: string = "";

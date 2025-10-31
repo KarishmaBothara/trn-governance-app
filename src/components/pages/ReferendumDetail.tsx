@@ -10,7 +10,6 @@ import { VotingHistoryModal } from '../VotingHistoryModal';
 import { ConnectWalletButton } from '../ConnectWalletButton';
 import { ArrowLeft, ArrowUp, ArrowDown, AlertTriangle, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUser } from '../UserContext';
 import { mockCancellationMotions } from '../council/mockData';
 import { CancellationMotion, CancellationVote, CancellationVoteType } from '../council/types';
 import {useReferendumInfo} from "@/hooks/useReferendums";
@@ -52,10 +51,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [cancellationVotes, setCancellationVotes] = useState<CancellationVote[]>([]);
   const { data: referendumData } = useReferendumInfo();
-  console.log("referendumData::",referendumData);
-  console.log("referendumId::",referendumId);
   const p = referendumData && referendumData.find(r => r.refIdx === referendumId);
-  console.log("P::",p);
   const ayeVotes = p?.voteCountAye;
   const nayVotes = p?.voteCountNay;
   const totalVotes = ayeVotes + nayVotes;
@@ -74,7 +70,6 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
     'FPass': { label: 'FPass', description: 'Use futurepass address' },
     'EOA': { label: 'EOA', description: 'Use eoa address' },
   };
-  // const [, enactmentDate] = useBlockTime(enactBlock.sub(bestNumber), trnApi);
 
   if (!bestNumber || status?.end.sub(bestNumber).lten(0)) {
     return null;
@@ -195,11 +190,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
     const isUpdate = existingVote !== null;
 
     if (!signer || !userSession || !trnApi || !builder) return;
-    // setIsLoading(true);
-    // referendumId
     const convictionValue = trnApi.registry.createType('Conviction', conviction[0]);
-    console.log("convictionValue::",convictionValue.toJSON());
-    // [referendumId, { Standard: { balance, vote: { aye: false, conviction } } }]
     const vote = trnApi.registry.createType('PalletDemocracyVoteAccountVote', { vote: { aye: aye, conviction: convictionValue}, balance: rootAmount}, 0);
     const extrinsic = trnApi.tx.democracy.vote(referendumId, vote);
 
@@ -233,7 +224,6 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
       onSend: async () => {
       }
     });
-    console.log("Extrinsic Result::",res);
     const { extrinsicId, transactionHash, result } = res;
     const event = result?.events.find((event) => {
       if (!("event" in event)) return event.name === "democracy.Voted";
@@ -249,10 +239,6 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
       const pId = referendum.pId;
 
       await updateVote(voter, refIndex,  isAye, amount, parseInt(pId));
-
-      // console.log("Event1::", event.event.data[0].toString());
-      // console.log("Event2::", event.event.data[1].toString());
-      //   console.log("Event3::", event.event.data[2].toString());
 
       if (existingVote) {
         setExistingVote({

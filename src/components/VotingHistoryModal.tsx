@@ -121,13 +121,13 @@ export function VotingHistoryModal({ isOpen, referendum, onClose }: VotingHistor
                         <div className="space-y-1">
                             <h4 className="text-foreground font-bold">{vote.voter}</h4>
                             <div className="flex items-center gap-1">
-                              {vote.vote === 'aye' ? (
+                              {vote.voteAye ? (
                                 <ArrowUp size={14} className="text-green-400" />
                               ) : (
                                 <ArrowDown size={14} className="text-red-400" />
                               )}
                               <span className="text-xs text-muted-foreground font-bold">
-                                {vote.vote === 'aye' ? 'Aye' : 'Nay'}
+                                {vote.voteAye ? 'Aye' : 'Nay'}
                               </span>
                             </div>
                           </div>
@@ -135,14 +135,14 @@ export function VotingHistoryModal({ isOpen, referendum, onClose }: VotingHistor
                         <div className="flex items-center gap-6">
                           <div className="text-right">
                             <p className="text-xs text-muted-foreground">Votes</p>
-                            <p className="text-foreground font-bold">{vote.votes.toLocaleString()}</p>
+                            <p className="text-foreground font-bold">{vote.amount}</p>
                           </div>
-                          {vote.delegated && (
-                            <div className="text-right">
-                              <p className="text-xs text-muted-foreground">Delegated</p>
-                              <p className="text-foreground font-bold">{vote.delegated}</p>
-                            </div>
-                          )}
+                        {/*  {vote.delegated && (*/}
+                        {/*    <div className="text-right">*/}
+                        {/*      <p className="text-xs text-muted-foreground">Delegated</p>*/}
+                        {/*      <p className="text-foreground font-bold">{vote.delegated}</p>*/}
+                        {/*    </div>*/}
+                        {/*  )}*/}
                         </div>
                       </div>
                     </CardContent>

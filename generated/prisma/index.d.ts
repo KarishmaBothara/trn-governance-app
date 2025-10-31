@@ -2454,11 +2454,13 @@ export namespace Prisma {
   export type VotesAvgAggregateOutputType = {
     refIdx: number | null
     pId: number | null
+    amount: number | null
   }
 
   export type VotesSumAggregateOutputType = {
     refIdx: number | null
     pId: number | null
+    amount: number | null
   }
 
   export type VotesMinAggregateOutputType = {
@@ -2468,6 +2470,7 @@ export namespace Prisma {
     voter: string | null
     voteAye: boolean | null
     conviction: string | null
+    amount: number | null
   }
 
   export type VotesMaxAggregateOutputType = {
@@ -2477,6 +2480,7 @@ export namespace Prisma {
     voter: string | null
     voteAye: boolean | null
     conviction: string | null
+    amount: number | null
   }
 
   export type VotesCountAggregateOutputType = {
@@ -2486,6 +2490,7 @@ export namespace Prisma {
     voter: number
     voteAye: number
     conviction: number
+    amount: number
     _all: number
   }
 
@@ -2493,11 +2498,13 @@ export namespace Prisma {
   export type VotesAvgAggregateInputType = {
     refIdx?: true
     pId?: true
+    amount?: true
   }
 
   export type VotesSumAggregateInputType = {
     refIdx?: true
     pId?: true
+    amount?: true
   }
 
   export type VotesMinAggregateInputType = {
@@ -2507,6 +2514,7 @@ export namespace Prisma {
     voter?: true
     voteAye?: true
     conviction?: true
+    amount?: true
   }
 
   export type VotesMaxAggregateInputType = {
@@ -2516,6 +2524,7 @@ export namespace Prisma {
     voter?: true
     voteAye?: true
     conviction?: true
+    amount?: true
   }
 
   export type VotesCountAggregateInputType = {
@@ -2525,6 +2534,7 @@ export namespace Prisma {
     voter?: true
     voteAye?: true
     conviction?: true
+    amount?: true
     _all?: true
   }
 
@@ -2621,6 +2631,7 @@ export namespace Prisma {
     voter: string
     voteAye: boolean
     conviction: string | null
+    amount: number
     _count: VotesCountAggregateOutputType | null
     _avg: VotesAvgAggregateOutputType | null
     _sum: VotesSumAggregateOutputType | null
@@ -2649,6 +2660,7 @@ export namespace Prisma {
     voter?: boolean
     voteAye?: boolean
     conviction?: boolean
+    amount?: boolean
   }, ExtArgs["result"]["votes"]>
 
 
@@ -2660,9 +2672,10 @@ export namespace Prisma {
     voter?: boolean
     voteAye?: boolean
     conviction?: boolean
+    amount?: boolean
   }
 
-  export type VotesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "refIdx" | "pId" | "voter" | "voteAye" | "conviction", ExtArgs["result"]["votes"]>
+  export type VotesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "refIdx" | "pId" | "voter" | "voteAye" | "conviction" | "amount", ExtArgs["result"]["votes"]>
 
   export type $VotesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Votes"
@@ -2674,6 +2687,7 @@ export namespace Prisma {
       voter: string
       voteAye: boolean
       conviction: string | null
+      amount: number
     }, ExtArgs["result"]["votes"]>
     composites: {}
   }
@@ -3072,6 +3086,7 @@ export namespace Prisma {
     readonly voter: FieldRef<"Votes", 'String'>
     readonly voteAye: FieldRef<"Votes", 'Boolean'>
     readonly conviction: FieldRef<"Votes", 'String'>
+    readonly amount: FieldRef<"Votes", 'Int'>
   }
     
 
@@ -5559,7 +5574,8 @@ export namespace Prisma {
     pId: 'pId',
     voter: 'voter',
     voteAye: 'voteAye',
-    conviction: 'conviction'
+    conviction: 'conviction',
+    amount: 'amount'
   };
 
   export type VotesScalarFieldEnum = (typeof VotesScalarFieldEnum)[keyof typeof VotesScalarFieldEnum]
@@ -5873,6 +5889,7 @@ export namespace Prisma {
     voter?: StringFilter<"Votes"> | string
     voteAye?: BoolFilter<"Votes"> | boolean
     conviction?: StringNullableFilter<"Votes"> | string | null
+    amount?: IntFilter<"Votes"> | number
   }
 
   export type VotesOrderByWithRelationInput = {
@@ -5882,6 +5899,7 @@ export namespace Prisma {
     voter?: SortOrder
     voteAye?: SortOrder
     conviction?: SortOrder
+    amount?: SortOrder
   }
 
   export type VotesWhereUniqueInput = Prisma.AtLeast<{
@@ -5894,6 +5912,7 @@ export namespace Prisma {
     voter?: StringFilter<"Votes"> | string
     voteAye?: BoolFilter<"Votes"> | boolean
     conviction?: StringNullableFilter<"Votes"> | string | null
+    amount?: IntFilter<"Votes"> | number
   }, "id">
 
   export type VotesOrderByWithAggregationInput = {
@@ -5903,6 +5922,7 @@ export namespace Prisma {
     voter?: SortOrder
     voteAye?: SortOrder
     conviction?: SortOrder
+    amount?: SortOrder
     _count?: VotesCountOrderByAggregateInput
     _avg?: VotesAvgOrderByAggregateInput
     _max?: VotesMaxOrderByAggregateInput
@@ -5920,6 +5940,7 @@ export namespace Prisma {
     voter?: StringWithAggregatesFilter<"Votes"> | string
     voteAye?: BoolWithAggregatesFilter<"Votes"> | boolean
     conviction?: StringNullableWithAggregatesFilter<"Votes"> | string | null
+    amount?: IntWithAggregatesFilter<"Votes"> | number
   }
 
   export type CouncilWhereInput = {
@@ -6269,6 +6290,7 @@ export namespace Prisma {
     voter: string
     voteAye: boolean
     conviction?: string | null
+    amount: number
   }
 
   export type VotesUncheckedCreateInput = {
@@ -6278,6 +6300,7 @@ export namespace Prisma {
     voter: string
     voteAye: boolean
     conviction?: string | null
+    amount: number
   }
 
   export type VotesUpdateInput = {
@@ -6286,6 +6309,7 @@ export namespace Prisma {
     voter?: StringFieldUpdateOperationsInput | string
     voteAye?: BoolFieldUpdateOperationsInput | boolean
     conviction?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
   }
 
   export type VotesUncheckedUpdateInput = {
@@ -6294,6 +6318,7 @@ export namespace Prisma {
     voter?: StringFieldUpdateOperationsInput | string
     voteAye?: BoolFieldUpdateOperationsInput | boolean
     conviction?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
   }
 
   export type VotesCreateManyInput = {
@@ -6303,6 +6328,7 @@ export namespace Prisma {
     voter: string
     voteAye: boolean
     conviction?: string | null
+    amount: number
   }
 
   export type VotesUpdateManyMutationInput = {
@@ -6311,6 +6337,7 @@ export namespace Prisma {
     voter?: StringFieldUpdateOperationsInput | string
     voteAye?: BoolFieldUpdateOperationsInput | boolean
     conviction?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
   }
 
   export type VotesUncheckedUpdateManyInput = {
@@ -6319,6 +6346,7 @@ export namespace Prisma {
     voter?: StringFieldUpdateOperationsInput | string
     voteAye?: BoolFieldUpdateOperationsInput | boolean
     conviction?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
   }
 
   export type CouncilCreateInput = {
@@ -6831,11 +6859,13 @@ export namespace Prisma {
     voter?: SortOrder
     voteAye?: SortOrder
     conviction?: SortOrder
+    amount?: SortOrder
   }
 
   export type VotesAvgOrderByAggregateInput = {
     refIdx?: SortOrder
     pId?: SortOrder
+    amount?: SortOrder
   }
 
   export type VotesMaxOrderByAggregateInput = {
@@ -6845,6 +6875,7 @@ export namespace Prisma {
     voter?: SortOrder
     voteAye?: SortOrder
     conviction?: SortOrder
+    amount?: SortOrder
   }
 
   export type VotesMinOrderByAggregateInput = {
@@ -6854,11 +6885,13 @@ export namespace Prisma {
     voter?: SortOrder
     voteAye?: SortOrder
     conviction?: SortOrder
+    amount?: SortOrder
   }
 
   export type VotesSumOrderByAggregateInput = {
     refIdx?: SortOrder
     pId?: SortOrder
+    amount?: SortOrder
   }
 
   export type StatsValueNullableCompositeFilter = {

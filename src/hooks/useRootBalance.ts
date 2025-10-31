@@ -1,6 +1,5 @@
 import { useTrnApi } from '@futureverse/transact-react';
 
-// import { useCall } from './useCall';
 import { useAuth } from "@futureverse/auth-react";
 import { useQuery } from "@tanstack/react-query";
 import {BigNumber} from "bignumber.js";

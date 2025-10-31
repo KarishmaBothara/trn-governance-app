@@ -16,8 +16,6 @@ export function useDelegates() {
 
             const data = await response.json();
             if (!data) return [];
-            console.log("***************");
-            console.log("Data:", data);
             const { delegateInfo } = data;
             return delegateInfo
         },

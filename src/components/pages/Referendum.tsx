@@ -64,7 +64,6 @@ export function Referendum({ referendum, onSelect }: { referendum: Referendum, o
   const {id, title, track, proposer, proposerAvatar, status, ayeVotes, nayVotes, ayePercentage, nayPercentage, conviction, submittedDate, bondedAmount } = referendum;
   const { trnApi } = useTrnApi();
   const { data: bestNumber } = useBestNumber();
-  console.log('bestNumber::',bestNumber);
   const enactBlock = status.end.add(status.delay);
   const remainBlock = status.end.sub(bestNumber).isub(BN_ONE);
 
@@ -73,8 +72,6 @@ export function Referendum({ referendum, onSelect }: { referendum: Referendum, o
   if (!bestNumber || status.end.sub(bestNumber).lten(0)) {
     return null;
   }
-  // Check if there's an active cancellation motion for this referendum
-  console.log("referendum::",referendum);
 
   return (
       <motion.div

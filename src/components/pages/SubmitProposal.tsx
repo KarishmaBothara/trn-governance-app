@@ -150,9 +150,6 @@ const ZERO_HASH = blake2AsHex('');
 
 function getCallState (fn: SubmittableExtrinsicFunction<'promise'>, values: RawParam[] = []): CallState | any {
   if (!fn) return {extrinsic: null, values: []};
-  // console.log("*******************");
-  // console.log('values::',values);
-  // console.log('fn::',fn);
   return {
     extrinsic: {
       fn,
@@ -218,20 +215,10 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   const [{ extrinsic, values }, setDisplay] = useState<CallState>(() => getCallState(methodFn, []));
   const [error, setError] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
-  // const _setValues = useCallback(
-  //     (values: RawParam[]) => {
-  //       console.log("Inside set values::");
-  //       console.log(values);
-  //       setDisplay(({extrinsic}) => ({extrinsic, values}))
-  //     },
-  //     []
-  // );
 
   useEffect((): void => {
     const values = proposalData.params;
-    console.log('proposalData.params::',values);
     if (values.length) {
-      console.log('proposalData.params::',values);
       try {
         const section = trnApi.tx[proposalData.sectionName];
         const method = section[proposalData.methodName];
@@ -261,7 +248,6 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       // const proposalExt = extrinsic.fn(...values.map(({ value }) => value));
       const method = extrinsic.fn(...values.map(( value, index ) => {
         const validValue = trnApi.registry.createType(paramOptions[index].type.type, value);
-        console.log('validValue:',validValue);
         return validValue;
       }));
       const encodedProposal = method.method.toHex() || '';
@@ -269,7 +255,6 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
 
       const encodedLength = Math.ceil((encodedProposal.length - 2) / 2);
       const encodedHash = blake2AsHex(encodedProposal);
-      console.log('encodedHash::',encodedHash);
       const notePreimageTx = trnApi.tx.preimage.notePreimage(encodedProposal);
 
       // we currently don't have a constant exposed, however match to Substrate
@@ -378,7 +363,6 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       // if (isValid) {
         try {
           paramsWithValue = params.map(p => ({...p, value: createValue(registry, p)}));
-          console.log('params::', paramsWithValue);
           setParamsOptions(paramsWithValue);
         } catch (e) {
 
@@ -397,7 +381,6 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       setCurrentStep('review');
     } else if (currentStep === 'review') {
       // Handle submission
-      console.log('Submitting proposal:', proposalData);
       if (!signer || !userSession || !trnApi || !builder) return;
       setIsLoading(true);
       const param = trnApi.registry.createType('FrameSupportPreimagesBounded', {hash_: encodedHash, len: encodedLength}, 2);
@@ -425,7 +408,6 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
         onSend: async () => {
         }
       });
-      console.log("Extrinsic Result::",res);
       const { extrinsicId, transactionHash, result } = res;
       const event = result?.events.find((event) => {
         // if (!("event" in event)) return event.name === "democracy.Proposed";
@@ -437,8 +419,6 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
           }
       });
       const index = proposalData.type === ProposalType.Democracy ? event?.event.data[0].toNumber() : event?.event.data[1].toNumber();
-      console.log("Event1::", event.event.data[0].toString());
-      console.log("Event2::", event.event.data[1].toString());
       const hash = proposalData.type === ProposalType.CouncilExternalMotion ? event.event.data[2].toString() : encodedHash;
       if (index) {
         try {
@@ -473,7 +453,6 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
           });
 
           const data = await response.json();
-          console.log("Data:::", data);
 
           if (data.success) {
             // Show success toast

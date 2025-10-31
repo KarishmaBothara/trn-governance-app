@@ -25,7 +25,6 @@ export function VoteForCouncilModal({ isOpen, onClose }: VoteForCouncilModalProp
   });
 
   const handleSubmit = () => {
-    console.log('Submitting council candidacy:', formData);
     // Handle submission logic here
     onClose();
   };

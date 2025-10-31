@@ -145,7 +145,8 @@ exports.Prisma.VotesScalarFieldEnum = {
   pId: 'pId',
   voter: 'voter',
   voteAye: 'voteAye',
-  conviction: 'conviction'
+  conviction: 'conviction',
+  amount: 'amount'
 };
 
 exports.Prisma.CouncilScalarFieldEnum = {

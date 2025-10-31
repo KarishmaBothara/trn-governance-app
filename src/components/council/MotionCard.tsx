@@ -42,11 +42,8 @@ export function MotionCard({ motion, userVotes, onVote, onClose, isCouncilMember
   const { encodedCallLength, weight } = useWeight(proposal);
 
   const { hasFailed, isCloseable, isVoteable, remainingBlocks } = useVotingStatus(motion?.votes, councilMembers?.length || 5, 'council');
-  console.log("remainingBlocks:::::",remainingBlocks);
-  // const [timeRemaining, setTimeRemaining] = useState<string>('');
 
   const [, timeRemaining] =  useBlockTime(remainingBlocks || 0, trnApi);
-  console.log('timeRemaining::',timeRemaining);
 
   // Countdown timer effect
   // useEffect(() => {

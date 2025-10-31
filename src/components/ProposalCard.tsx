@@ -81,7 +81,6 @@ export function ProposalCard({ proposal, onSelect }: ProposalCardProps) {
 
   const endorse = async () => {
       // Handle submission
-      console.log('Submitting endorsement:');
       if (!signer || !userSession || !trnApi || !builder) return;
       let extrinsic = trnApi.tx.democracy.second(proposal.id);
 
@@ -99,7 +98,6 @@ export function ProposalCard({ proposal, onSelect }: ProposalCardProps) {
         onSend: async () => {
         }
       });
-      console.log("Extrinsic Result::",res);
       const { extrinsicId, transactionHash, result } = res;
       const event = result?.events.find((event) => {
             return event.event.section === "democracy" && event.event.method === "Seconded";
@@ -117,7 +115,6 @@ export function ProposalCard({ proposal, onSelect }: ProposalCardProps) {
 
   const cancelProposal = async () => {
     // Handle submission
-    console.log('Submitting cancelProposal:');
     if (!signer || !userSession || !trnApi || !builder) return;
     let extrinsic = trnApi.tx.democracy.cancelProposal(proposal.id);
 
@@ -135,7 +132,6 @@ export function ProposalCard({ proposal, onSelect }: ProposalCardProps) {
       onSend: async () => {
       }
     });
-    console.log("Extrinsic Result::",res);
     const { extrinsicId, transactionHash, result } = res;
     const event = result?.events.find((event) => {
       return event.event.section === "democracy" && event.event.method === "Seconded";

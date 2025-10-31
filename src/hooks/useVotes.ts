@@ -15,12 +15,9 @@ export function useVotes(pId) {
 
             const data = await response.json();
             if (!data) return [];
-            console.log("***************");
-            console.log("Data:", data);
-            const { voteInfo } = data;
-            return voteInfo
+            const { voteData } = data;
+            return voteData
         },
-        // enabled: !!trnApi?.isReady,
         refetchInterval: 60000,
     });
 }

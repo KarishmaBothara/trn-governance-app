@@ -56,7 +56,6 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
   const { data: proposalDBInfo } = useCouncilProposals();
   const { data: oldProposals } = useOldCouncilProposal();
 
-  console.log("Inside council............", proposalDBInfo);
 
   // Redirect non-council members away from propose tab
   if (activeTab === 'propose' && !isCouncilMember) {
@@ -259,8 +258,6 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
   }
 
   const filteredMotions = proposalDBInfo?.filter(p => p.id !== undefined && p.status === "Processing");//mockMotions.filter(motion => motion.status === activeMotionStatus);
-  console.log('filteredMotions::',filteredMotions);
-  // const activeCancellationMotions = mockCancellationMotions.filter(motion => motion.status === 'active');
 
   return (
     <div className="space-y-8">

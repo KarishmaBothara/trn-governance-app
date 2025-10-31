@@ -16,7 +16,6 @@ export function ResignSeatModal({ isOpen, onClose }: ResignSeatModalProps) {
     setIsConfirming(true);
     // Simulate API call
     setTimeout(() => {
-      console.log('Resigning from council seat');
       setIsConfirming(false);
       onClose();
     }, 2000);

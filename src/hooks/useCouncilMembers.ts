@@ -28,7 +28,6 @@ export function useCouncilMembers() {
                 const balance = hexToNumber(balanceHex);
                 const dbDetails = councilInfo.find(c => c.address.toLowerCase() === member.toString().toLowerCase());
                 const obj = { ...{ balance: balance }, ...dbDetails };
-                console.log("Obj::", obj);
                 return obj;
             });
         },

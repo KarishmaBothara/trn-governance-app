@@ -107,7 +107,6 @@ export function ProposeMotionFlow({ onComplete }: ProposeMotionFlowProps) {
       setCurrentStep('review');
     } else if (currentStep === 'review') {
       // Handle motion submission
-      console.log('Submitting motion:', motionData);
 
       // Show success toast
       toast.success('Council motion submitted!', {

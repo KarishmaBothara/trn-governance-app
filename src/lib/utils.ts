@@ -18,7 +18,7 @@ export function formatBalance(balance: BigNumber | undefined): string {
 
 export async function updateVote(voter, refIndex, isAye, amount, pId) {
     try {
-        const response = await fetch('/api/vote', {
+        const response = await fetch('/api/votes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -29,13 +29,11 @@ export async function updateVote(voter, refIndex, isAye, amount, pId) {
         });
 
         const data = await response.json();
-        console.log("Data:::", data);
 
         if (data.success) {
             // Show success toast
             return true;
         } else {
-            // setError(data.error || 'Something went wrong');
             return undefined;
         }
     } catch (error) {
@@ -213,7 +211,6 @@ export const closeVote = async (tx, toast, motionId ) => {
         onSend: async () => {
         }
     });
-    console.log("Extrinsic Result::",res);
     const { result } = res;
     const event = result?.events.find((event) => {
         return event.event.section === "council" && event.event.method === "Closed";
@@ -239,7 +236,6 @@ export const closeVote = async (tx, toast, motionId ) => {
         });
 
         const data = await response.json();
-        console.log("Data:::", data);
 
         if (data.success) {
             // Show success toast
@@ -264,7 +260,6 @@ export const vote = async (tx, toast, motionId ) => {
         onSend: async () => {
         }
     });
-    console.log("Extrinsic Result::",res);
     const { result } = res;
     const event = result?.events.find((event) => {
         return event.event.section === "council" && event.event.method === "Voted";
@@ -295,7 +290,6 @@ export const vote = async (tx, toast, motionId ) => {
         });
 
         const data = await response.json();
-        console.log("Data:::", data);
 
         if (data.success) {
             // Show success toast
@@ -321,7 +315,6 @@ export const nominate = async (tx, toast, candidate ) => {
         onSend: async () => {
         }
     });
-    console.log("Extrinsic Result::",res);
     const { result } = res;
     const event = result?.events.find((event) => {
         return event.event.section === "elections" && event.event.method === "CandidateAdded";
@@ -342,7 +335,6 @@ export const nominate = async (tx, toast, candidate ) => {
         });
 
         const data = await response.json();
-        console.log("Data:::", data);
 
         if (data.success) {
             // Show success toast

@@ -6,11 +6,6 @@ import {BN_ONE} from "@polkadot/util";
 
 export function useBestNumber() {
     const { trnApi } = useTrnApi();
-    console.log("trnApi status:", {
-        exists: !!trnApi,
-        isReady: trnApi?.isReady,
-        enabled: !!trnApi?.isReady
-    });
 
     return useQuery({
         queryKey: ["bestNumber"],

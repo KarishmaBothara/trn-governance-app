@@ -50,6 +50,7 @@ model Votes {
   voter      String
   voteAye    Boolean
   conviction String?
+  amount     Int
 
   @@map("votes")
 }

@@ -23,10 +23,8 @@ interface ProposalDetailProps {
 }
 
 export function ProposalDetail({ proposal, onNavigate }: ProposalDetailProps) {
-  console.log("Proposal detail::", proposal);
   const { isLoggedIn, isCouncilMember } = useUser();
   // const { data: proposal } = useProposalInfoFromId(proposalId);
-  console.log("proposal::",proposal);
   const [voteDirection, setVoteDirection] = useState<'aye' | 'nay' | null>('aye');
   // const [stakeAmount, setStakeAmount] = useState([200]);
   const [rootAmount, setRootAmount] = useState('200');

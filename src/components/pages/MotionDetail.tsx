@@ -41,7 +41,6 @@ export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDeta
 
   // Find the motion by ID (in real app this would fetch from API)
   // const motion = mockMotions.find(m => m.id === motionId);
-  console.log("motion::",motion);
 
   const accountType = {
     'FPass': { label: 'FPass', description: 'Use futurepass address' },
@@ -49,7 +48,6 @@ export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDeta
   };
 
   const handleCloseVote = async () => {
-    console.log("Close vote..");
     if (!signer || !userSession || !trnApi || !builder) return;
     const extrinsic = trnApi.tx.council.close(motion.hash || motion.preimage, motion?.idx, motion.weight, motion.encodedCallLength );
 

@@ -6,11 +6,6 @@ import { ProposalType } from "../../generated/prisma";
 
 export function useReferendumInfo() {
     const { trnApi } = useTrnApi();
-    console.log("trnApi status:", {
-        exists: !!trnApi,
-        isReady: trnApi?.isReady,
-        enabled: !!trnApi?.isReady
-    });
 
     return useQuery({
         queryKey: ["trnReferendum"],

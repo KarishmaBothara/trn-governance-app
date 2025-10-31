@@ -137,10 +137,8 @@ const quickActions = [
 
 export function GovernanceHub({ onNavigate, onSelectProposal }: GovernanceHubProps) {
   const [activeTab, setActiveTab] = useState<ProposalTab>('queued');
-  console.log("*********************");
   const { data: proposalsInfo } = useProposalInfo();
   const proposals = proposalsInfo ? proposalsInfo : [];
-  console.log("proposals::",proposals);
   const getFilteredProposals = () => {
     switch (activeTab) {
       case 'queued':

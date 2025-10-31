@@ -22,7 +22,6 @@ interface BecomeADelegateModalProps {
 export function BecomeADelegateModal({ isOpen, onClose }: BecomeADelegateModalProps) {
   // const { isLoggedIn } = useUser();
   const { userSession } = useAuth();
-  console.log("User session::", userSession);
   const [formData, setFormData] = useState({
     name: '',
     account: '',
@@ -68,7 +67,6 @@ export function BecomeADelegateModal({ isOpen, onClose }: BecomeADelegateModalPr
       });
 
       const data = await response.json();
-      console.log("Data:::", data);
 
       if (data.success) {
         // Show success toast

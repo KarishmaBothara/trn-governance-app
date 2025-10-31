@@ -192,7 +192,6 @@ export default function GovernancePage() {
     if (page === 'proposals-referendums') {
       handleNavigateToProposalsReferendums();
     } else {
-      console.log('**************');
       setCurrentPage(page);
       if (page === 'proposals') {
         setProposalsDefaultTab('proposals');

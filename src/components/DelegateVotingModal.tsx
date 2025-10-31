@@ -91,7 +91,6 @@ export function DelegateVotingModal({ isOpen, onClose, delegate }: DelegateVotin
       onSend: async () => {
       }
     });
-    console.log("Extrinsic Result::",res);
     const { extrinsicId, transactionHash, result } = res;
     const event = result?.events.find((event) => {
       if (!("event" in event)) return event.name === "democracy.Delegated";

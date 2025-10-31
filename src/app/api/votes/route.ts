@@ -11,7 +11,7 @@ export async function POST(
         const prisma: PrismaClient = await getPrismaClient();
         const proposal = await prisma.votes.create({
             data: {
-                voter, refIndex, isAye, amount, pId
+                voter, refIdx: refIndex, voteAye: isAye, amount, pId
             }
         });
 
@@ -36,10 +36,10 @@ export async function GET(request: NextRequest) {
        const prisma: PrismaClient = await getPrismaClient();
         const {searchParams} = new URL(request.url)
         const pId = searchParams.get('pId');
-        const delegateInfo = await prisma.votes.findMany({
-            where: { pId: pId }
+        const voteData = await prisma.votes.findMany({
+            where: { pId: parseInt(pId) }
         });
-        return NextResponse.json({ success: true, delegateInfo }, { status: 201 })
+        return NextResponse.json({ success: true, voteData }, { status: 201 })
 
 
     } catch (error) {

@@ -4,17 +4,10 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Badge } from '../ui/badge';
-// import { Card, CardContent } from '../ui/card';
-// import { Progress } from '../ui/progress';
 import { ProposalCard } from '../ProposalCard';
-// import { Search, Filter, X, ArrowUpDown, Clock, ArrowUp, ArrowDown, Vote, Users, Calendar, TrendingUp, Activity } from 'lucide-react';
 import { Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useProposalInfo } from "@/hooks/useProposal";
 import { useReferendumInfo } from "@/hooks/useReferendums";
-// import {useBestNumber} from "@/hooks/useBestNumber";
-import {useChangeCalc} from "@/hooks/useChangeCalc";
-import {BN_ONE} from "@polkadot/util";
 import { Referendum } from "@/components/pages/Referendum";
 import {useBestNumber} from "@/hooks/useBestNumber";
 
@@ -57,9 +50,7 @@ export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal,
   const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
   const [searchTerm, setSearchTerm] = useState('');
   const { data: proposalData } = useProposalInfo();
-  console.log("ProposalData::", proposalData);
   const { data: bestNumber } = useBestNumber();
-  console.log('bestNumber::',bestNumber);
   const { data: referendumData } = useReferendumInfo();
 
   let proposals = proposalData ? proposalData.map(p => {
@@ -84,7 +75,6 @@ export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal,
   }) : [];
 
   proposals = referendumData && referendumData.length ? proposals.filter(p => referendumData.some(r=> r.idx !== p.id)) : proposals;
-  console.log('proposals::',proposals);
   const referendums = referendumData ? referendumData.map(p => {
     const ayeVotes = p.voteCountAye;
     const nayVotes = p.voteCountNay;
@@ -205,95 +195,10 @@ export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal,
     searchTerm !== ''
   ].filter(Boolean).length;
 
-  // Helper function to format time remaining
-  // const formatTimeRemaining = (hours: number) => {
-  //   if (hours < 24) {
-  //     return `${hours}h`;
-  //   }
-  //   const days = Math.floor(hours / 24);
-  //   const remainingHours = hours % 24;
-  //   return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
-  // };
-
   // Get appropriate status options based on active tab
   const getStatusOptions = () => {
     return activeTab === 'proposals' ? STATUS_OPTIONS : REFERENDUM_STATUS_OPTIONS;
   };
-
-  // Referendum Card Component - Consistent with ProposalCard design
-  // const ReferendumCard = ({ referendum, onSelect }: { referendum: ReferendumInt, onSelect: () => void }) => {
-  //   const getTrackColor = () /*(track: string)*/ => {
-  //     return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-  //   };
-  //
-  //   return (
-  //     <motion.div
-  //       className="bg-card rounded-xl p-5 shadow-elevation-sm border border-border cursor-pointer"
-  //       onClick={onSelect}
-  //       whileHover={{
-  //         scale: 1.005,
-  //         borderColor: 'rgba(255, 255, 255, 0.6)'
-  //       }}
-  //       whileTap={{ scale: 0.995 }}
-  //       transition={{ duration: 0.15, ease: "easeOut" }}
-  //       initial={{ opacity: 0, y: 8 }}
-  //       animate={{ opacity: 1, y: 0 }}
-  //     >
-  //       <div className="space-y-4">
-  //         {/* Header with badges and meta info */}
-  //         <div className="flex items-start justify-between">
-  //           <div className="flex gap-3">
-  //             <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getStatusBadgeClass(referendum.status)}`}>
-  //               {referendum.status}
-  //             </Badge>
-  //             {/*<Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getTrackColor(referendum.track)}`}>*/}
-  //             <Badge className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${getTrackColor()}`}>
-  //               {referendum.track}
-  //             </Badge>
-  //           </div>
-  //           <div className="hidden sm:block text-xs text-foreground font-medium">
-  //             {referendum.status === 'Active' && referendum.votingPeriodHours > 0 && `${formatTimeRemaining(referendum.votingPeriodHours)} left`}
-  //             {referendum.status === 'Cancelled' && 'Cancelled by Council'}
-  //             {referendum.status !== 'Active' && referendum.status !== 'Cancelled' && ''} | #{referendum.id}
-  //           </div>
-  //         </div>
-  //
-  //         {/* Title */}
-  //         <h4 className="text-foreground">{referendum.title}</h4>
-  //
-  //         {/* Vote breakdown and proposer - Only show for non-cancelled */}
-  //         {referendum.status !== 'Cancelled' && (
-  //           <div className="flex items-start justify-between">
-  //             <div className="flex gap-1">
-  //               <div className="flex items-center gap-1">
-  //                 <ArrowUp size={16} className="text-green-400" />
-  //                 <span className="text-xs text-foreground font-medium">{referendum.ayePercentage}% Aye</span>
-  //               </div>
-  //               <div className="flex items-center gap-1">
-  //                 <ArrowDown size={16} className="text-red-400" />
-  //                 <span className="text-xs text-foreground font-medium">{referendum.nayPercentage}% Nay</span>
-  //               </div>
-  //             </div>
-  //             <div className="flex items-start gap-3">
-  //               <div
-  //                 className="w-5 h-5 rounded-full bg-cover bg-center"
-  //                 style={{ backgroundImage: `url(${referendum.proposerAvatar})` }}
-  //               />
-  //               <span className="text-xs text-foreground font-medium">{referendum.proposer}</span>
-  //             </div>
-  //           </div>
-  //         )}
-  //
-  //         {/* Cancelled referendum info */}
-  //         {referendum.status === 'Cancelled' && (
-  //           <div className="bg-gray-500/10 rounded-lg p-3 border border-gray-500/20">
-  //             <p className="text-xs text-gray-400">This referendum was cancelled by council vote</p>
-  //           </div>
-  //         )}
-  //       </div>
-  //     </motion.div>
-  //   );
-  // };
 
   return (
     <div className="space-y-6">
@@ -534,14 +439,6 @@ export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal,
                 />
               ))
             : paginatedData.map((referendum: any) => (
-                // <ReferendumCard
-                //   key={referendum.id}
-                //   referendum={referendum}
-                //   onSelect={() => {
-                //     onSelectProposal(referendum.id);
-                //     onNavigate('referendum-detail');
-                //   }}
-                // />
                   <Referendum
                       key={referendum.id}
                       referendum={referendum}

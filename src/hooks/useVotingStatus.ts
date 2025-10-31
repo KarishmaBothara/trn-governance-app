@@ -1,5 +1,3 @@
-// Copyright 2017-2025 @polkadot/react-hooks authors & contributors
-// SPDX-License-Identifier: Apache-2.0
 
 import type { ApiPromise } from '@polkadot/api';
 import type { BlockNumber, Votes } from '@polkadot/types/interfaces';
@@ -26,12 +24,10 @@ export type CollectiveType = 'alliance' | 'council' | 'membership' | 'technicalC
 const DEFAULT_STATUS = { hasFailed: false, hasPassed: false, isCloseable: false, isVoteable: false, remainingBlocks: null };
 
 function getStatus (api: ApiPromise, bestNumber: BlockNumber, votes: Votes, numMembers: number, section: CollectiveType): State {
-  console.log('Inside get status...');
   const [instance] = api.registry.getModuleInstances(api.runtimeVersion.specName.toString(), section) || [section];
   const modLocation = isFunction(api.tx[instance as 'technicalCommittee']?.close)
     ? instance
     : null;
-  console.log('modLocation...',modLocation);
 
   if (!votes.end || !modLocation) {
     return {
@@ -44,9 +40,7 @@ function getStatus (api: ApiPromise, bestNumber: BlockNumber, votes: Votes, numM
   }
 
   const isEnd = bestNumber.gte(votes.end);
-  // let approved = yes_votes >= voting.threshold;
   const hasPassed = votes.threshold.lten(votes.ayes.length);
-  // let disapproved = seats.saturating_sub(no_votes) < voting.threshold;
   const hasFailed = votes.threshold.gtn(Math.abs(numMembers - votes.nays.length));
 
   return {
@@ -65,8 +59,6 @@ function getStatus (api: ApiPromise, bestNumber: BlockNumber, votes: Votes, numM
 export function useVotingStatus (votes: Votes | null | undefined, numMembers: number, section: CollectiveType): State {
     const {trnApi} = useTrnApi();
     const { data: bestNumber } = useBestNumber();
-    console.log('bestNumber::',bestNumber);
-    // const bestNumber = useBestNumber();
 
     return useMemo(
         () => {

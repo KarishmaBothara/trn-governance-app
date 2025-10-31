@@ -56,7 +56,6 @@ export async function GET(request: NextRequest) {
     try {
         const {searchParams} = new URL(request.url)
         const indexes = searchParams.get('indexes');
-        console.log("Indexes:",indexes);
         const prisma: PrismaClient = await getPrismaClient();
         let proposalDBInfo: Proposal[];
         if (!indexes) {
@@ -66,9 +65,7 @@ export async function GET(request: NextRequest) {
                 }
             });
         } else {
-            console.log("Inside else...");
             const hashes = JSON.parse(indexes);//indexes.map(i => parseInt(i));
-            console.log('hashes::',hashes);
             proposalDBInfo = await prisma.proposal.findMany({
                 where: {
                     hash: {
@@ -80,7 +77,6 @@ export async function GET(request: NextRequest) {
                     createdAt: 'desc',
                 }
             });
-            console.log('proposalDBInfo::',proposalDBInfo);
         }
         return NextResponse.json({ success: true, proposalDBInfo }, { status: 201 })
 
