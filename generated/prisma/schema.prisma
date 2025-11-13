@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Proposal {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  idx           Int
+  extrinsicId   String
+  preimage      String
+  deposit       String
+  title         String
+  summary       String
+  description   String
+  link          String
+  successful    Boolean
+  proposer      String
+  proposalType  ProposalType
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime
+  hash          String?
+  status        ProposalStatus
+  method        String
+  section       String
+  args          Json?
+  threshold     Int
+  ayePercentage Int?
+  nayPercentage Int?
+  totalVotes    Int
+
+  @@index([id, idx])
+  @@map("proposal")
+}
+
+model Votes {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  refIdx     Int
+  pId        Int
+  voter      String
+  voteAye    Boolean
+  conviction String?
+  amount     Int
+
+  @@map("votes")
+}
+
+enum ProposalStatus {
+  Cancelled
+  Rejected
+  Passed
+  Processing
+}
+
+model Council {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  address     String      @unique
+  backing     String
+  votes       String
+  description String
+  hasDiscord  Boolean
+  hasTwitter  Boolean
+  twitter     String?
+  discord     String?
+  verified    Boolean
+  stats       StatsValue?
+
+  @@index([id, address])
+  @@map("council")
+}
+
+type StatsValue {
+  motionsProposed Int
+  participation   String
+  termStart       String
+}
+
+enum ProposalType {
+  Democracy
+  CouncilMotion
+  CouncilExternalMotion
+}
+
+type VotingHistory {
+  proposalId String
+  title      String
+  date       String
+  vote       Boolean
+}
+
+model Delegate {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  address         String          @unique
+  votingPower     String
+  totalDelegators Int
+  participation   Int
+  description     String
+  twitter         String?
+  discord         String?
+  votingHistory   VotingHistory[]
+
+  @@index([id, address])
+  @@map("delegate")
+}
