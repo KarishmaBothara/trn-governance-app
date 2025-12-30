@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import { NavigationItem } from '@/app/page';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -20,7 +20,7 @@ import { getTypeDef, TypeRegistry} from '@polkadot/types/create';
 import { createValue } from "@/components/pages/values";
 import { isUndefined } from '@polkadot/util';
 import { truncateAddress } from "@/lib/utils";
-import { stringToU8a } from '@polkadot/util';
+// import { stringToU8a } from '@polkadot/util';
 import { useCustomExtrinsicBuilder } from "@/hooks/useCustomExtrinsicBuilder";
 import { useSigner } from "@/hooks/useSigner";
 import LoadingComponent from "@/components/ui/loading";
@@ -120,8 +120,9 @@ function StepIndicator({ currentStep }: StepIndicatorProps) {
 }
 
 interface HashState {
+  proposalExt: any;
   encodedHash: string;
-  encodedLength: BN | null;
+  encodedLength: BN | number | string | null;
   storageFee: BN | null;
 }
 
@@ -178,6 +179,7 @@ function isValuesValid (params: ParamDef[], values: RawParam[]): boolean {
       !isUndefined(value) &&
       !isUndefined(value.value) &&
       params.length === values.length
+      , true as boolean
   );
 }
 
@@ -210,15 +212,15 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   const [areaOptions, setAreaOptions] = useState<{label: string, value: string}[]>([]);
   const [methodOptions, setMethodOptions] = useState<{label: string, value: string}[]>([]);
   const [paramOptions, setParamsOptions] = useState<{name: string, type: string, typeName: string, value: RawParam}[]>([]);
-  const [methodFn, setMethodFn] = useState<SubmittableExtrinsicFunction<'promise'>>(null);
-  const [{ proposalExt, encodedHash, encodedLength, storageFee }, setHash] = useState<HashState>({ proposalExt: null, encodedHash: ZERO_HASH, encodedLength: '', storageFee: null });
-  const [{ extrinsic, values }, setDisplay] = useState<CallState>(() => getCallState(methodFn, []));
-  const [error, setError] = useState<boolean>(true);
+  // const [methodFn, ] = useState<SubmittableExtrinsicFunction<'promise'>>(null);
+  const [{ proposalExt, encodedHash, encodedLength }, setHash] = useState<HashState>({ proposalExt: null, encodedHash: ZERO_HASH, encodedLength: '', storageFee: null });
+  // const [{ extrinsic, values }, setDisplay] = useState<CallState>(() => getCallState(methodFn, []));
+  const [, setError] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect((): void => {
     const values = proposalData.params;
-    if (values.length) {
+    if (values.length && trnApi) {
       try {
         const section = trnApi.tx[proposalData.sectionName];
         const method = section[proposalData.methodName];
@@ -235,7 +237,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
     }
 
     // setDisplay(({extrinsic}) => ({extrinsic, values}))
-  }, [proposalData.params, proposalData.sectionName, proposalData.methodName]);
+  }, [proposalData.params, proposalData.sectionName, proposalData.methodName, trnApi]);
 
   useEffect((): void => {
     if (trnApi?.isReady && proposalData.sectionName && proposalData.methodName && proposalData.params.length) {
@@ -246,16 +248,16 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       const { extrinsic } = getCallState(methodFn, values);
 
       // const proposalExt = extrinsic.fn(...values.map(({ value }) => value));
-      const method = extrinsic.fn(...values.map(( value, index ) => {
-        const validValue = trnApi.registry.createType(paramOptions[index].type.type, value);
+      const method = extrinsic.fn(...values.map(( value: any, index: number ) => {
+        const validValue = trnApi.registry.createType(paramOptions[index].type, value);
         return validValue;
       }));
       const encodedProposal = method.method.toHex() || '';
-      const callHash = method.method.hash.toHex()
+      // const callHash = method.method.hash.toHex()
 
       const encodedLength = Math.ceil((encodedProposal.length - 2) / 2);
       const encodedHash = blake2AsHex(encodedProposal);
-      const notePreimageTx = trnApi.tx.preimage.notePreimage(encodedProposal);
+      // const notePreimageTx = trnApi.tx.preimage.notePreimage(encodedProposal);
 
       // we currently don't have a constant exposed, however match to Substrate
       const storageFee = ((trnApi.consts.preimage?.baseDeposit || BN_ZERO) as unknown as BN).add(
@@ -316,12 +318,12 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
     },
   };
 
-  const timingOptions = {
-    'immediate': { label: '0 blocks (immediate)', description: 'Takes effect immediately' },
-    '3-hours': { label: '3 hours (recommended delay)', description: 'Standard delay for most proposals' },
-    '28800-blocks': { label: '28800 blocks (recommended delay)', description: 'Standard delay for critical changes' },
-    'custom': { label: 'Custom', description: 'Set your own timing' },
-  };
+  // const timingOptions = {
+  //   'immediate': { label: '0 blocks (immediate)', description: 'Takes effect immediately' },
+  //   '3-hours': { label: '3 hours (recommended delay)', description: 'Standard delay for most proposals' },
+  //   '28800-blocks': { label: '28800 blocks (recommended delay)', description: 'Standard delay for critical changes' },
+  //   'custom': { label: 'Custom', description: 'Set your own timing' },
+  // };
 
   useEffect(() => {
     if (trnApi?.isReady && areaOptions.length == 0) {
@@ -363,7 +365,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       // if (isValid) {
         try {
           paramsWithValue = params.map(p => ({...p, value: createValue(registry, p)}));
-          setParamsOptions(paramsWithValue);
+          setParamsOptions(paramsWithValue as any);
         } catch (e) {
 
         }
@@ -384,7 +386,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       if (!signer || !userSession || !trnApi || !builder) return;
       setIsLoading(true);
       const param = trnApi.registry.createType('FrameSupportPreimagesBounded', {hash_: encodedHash, len: encodedLength}, 2);
-      let extrinsic = "";
+      let extrinsic;
       if (proposalData.type === "Democracy") {
         extrinsic = trnApi.tx.democracy.propose(param, 100000000);
       } else if (proposalData.type === "CouncilMotion") {
@@ -395,8 +397,8 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       }
 
       const tx = proposalData.track === 'FPass' ? await builder
-          .fromExtrinsic(extrinsic)
-          .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+          .fromExtrinsic(extrinsic as any)
+          .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic as any);
 
       const res = await tx.signAndSend({
         onSign: () => {
@@ -408,7 +410,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
         onSend: async () => {
         }
       });
-      const { extrinsicId, transactionHash, result } = res;
+      const { extrinsicId, result } = res;
       const event = result?.events.find((event) => {
         // if (!("event" in event)) return event.name === "democracy.Proposed";
           switch(proposalData.type) {
@@ -418,8 +420,8 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
                 return event.event.section === "council" && event.event.method === "Proposed";
           }
       });
-      const index = proposalData.type === ProposalType.Democracy ? event?.event.data[0].toNumber() : event?.event.data[1].toNumber();
-      const hash = proposalData.type === ProposalType.CouncilExternalMotion ? event.event.data[2].toString() : encodedHash;
+      const index = proposalData.type === ProposalType.Democracy ? (event?.event.data[0] as any).toNumber() : (event?.event.data[1] as any).toNumber();
+      const hash = proposalData.type === ProposalType.CouncilExternalMotion ? event?.event.data[2].toString() : encodedHash;
       if (index) {
         try {
           const {title, discussionLink, summary, details} = proposalData;
@@ -494,7 +496,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
          if (proposalData.type === ProposalType.Democracy)  {
            return !!(proposalData.type && proposalData.track)
          } else {
-           return !!(proposalData.type && proposalData.track && proposalData.timing)
+           return !!(proposalData.type && proposalData.track);// && proposalData.timing)
          }
       case 'details':
         return !!(proposalData.title && proposalData.summary);
@@ -509,12 +511,12 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
   const selectedTrack = selectedProposalType && proposalData.track ?
       selectedProposalType.tracks[proposalData.track as keyof typeof selectedProposalType.tracks] : null;
 
-  const getDefaultTiming = () => {
-    if (proposalData.type === 'technical') {
-      return '3-hours';
-    }
-    return '28800-blocks';
-  };
+  // const getDefaultTiming = () => {
+  //   if (proposalData.type === 'technical') {
+  //     return '3-hours';
+  //   }
+  //   return '28800-blocks';
+  // };
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -541,7 +543,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
                         ...proposalData,
                     type: value as keyof typeof proposalTypes,
                         track: '',
-                        timing: getDefaultTiming()
+                        // timing: getDefaultTiming()
                       });
                     }}
                 >
@@ -931,7 +933,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Pre-image byte length</p>
-              <p className="text-sm text-foreground">{encodedLength || '0'}</p>
+              <p className="text-sm text-foreground">{encodedLength?.toString() || '0'}</p>
             </div>
           </div>
 

@@ -3,9 +3,6 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dial
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Slider } from './ui/slider';
-// import { X } from 'lucide-react';
-import { useUser } from './UserContext';
 import { ConnectWalletButton } from './ConnectWalletButton';
 import {useSigner} from "@/hooks/useSigner";
 import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
@@ -43,7 +40,6 @@ interface DelegateVotingModalProps {
 }
 
 export function DelegateVotingModal({ isOpen, onClose, delegate }: DelegateVotingModalProps) {
-  const { isLoggedIn } = useUser();
   const [delegateAddress, setDelegateAddress] = useState(delegate?.address);
   const [rootAmount, setRootAmount] = useState('200');
   const [account, setAccount] = useState<string>('EOA');
@@ -66,7 +62,7 @@ export function DelegateVotingModal({ isOpen, onClose, delegate }: DelegateVotin
   const handleSubmit = async () => {
     // Handle delegation submission
       // const convictionMultipliers = ['x2 (2 days)', 'x4 (4 days)', 'x8 (8 days)', 'x16 (16 days)', 'x32 (32 days)'];
-
+    if (!trnApi || !builder || !userSession) return;
     const extrinsic = trnApi.tx.democracy.delegate(delegateAddress, rootAmount);
 
     const tx = account === 'FPass' ? await builder
@@ -91,9 +87,10 @@ export function DelegateVotingModal({ isOpen, onClose, delegate }: DelegateVotin
       onSend: async () => {
       }
     });
-    const { extrinsicId, transactionHash, result } = res;
+    // const { extrinsicId, transactionHash, result } = res;
+    const { result } = res;
     const event = result?.events.find((event) => {
-      if (!("event" in event)) return event.name === "democracy.Delegated";
+      // if (!("event" in event)) return event.name === "democracy.Delegated";
 
       return event.event.section === "democracy" && event.event.method === "Delegated";
     });

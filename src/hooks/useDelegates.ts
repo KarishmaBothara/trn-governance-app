@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import {ProposalStatus, ProposalType} from "../../generated/prisma";
+// import {ProposalStatus, ProposalType} from "../../generated/prisma";
 
 export function useDelegates() {
 

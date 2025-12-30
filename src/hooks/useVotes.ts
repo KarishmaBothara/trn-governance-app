@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-export function useVotes(pId) {
+export function useVotes(pId: number | undefined) {
 
     return useQuery({
         queryKey: ["trnVotes"],

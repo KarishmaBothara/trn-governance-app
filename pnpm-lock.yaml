@@ -35,9 +35,15 @@ importers:
       '@polkadot/api':
         specifier: ^10.13.1
         version: 10.13.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@polkadot/api-derive':
+        specifier: ^10.13.1
+        version: 10.13.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@polkadot/networks':
         specifier: ^13.4.3
         version: 13.5.6
+      '@polkadot/types':
+        specifier: ^10.13.1
+        version: 10.13.1
       '@polkadot/ui-keyring':
         specifier: ^3.12.2
         version: 3.16.1(@polkadot/keyring@12.6.2(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2))(@polkadot/ui-settings@3.16.1(@polkadot/networks@13.5.6)(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)

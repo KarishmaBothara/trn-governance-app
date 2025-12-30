@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { BN_MAX_INTEGER, BN_ONE, bnMin, bnToBn, extractTime } from '@polkadot/util';
 
 import { useBlockInterval } from './useBlockInterval';
-import {useTrnApi} from "@futureverse/transact-react";
+// import {useTrnApi} from "@futureverse/transact-react";
 
 type Result = [blockInterval: number, timeStr: string, time: Time];
 
@@ -51,7 +51,7 @@ export function calcBlockTime (blockTime: BN, blocks: BN): Result {
   ];
 }
 
-export function useBlockTime (blocks: number | BN = BN_ONE | null, trnApi): Result {
+export function useBlockTime (blocks: number | BN | null = BN_ONE, trnApi: ApiPromise): Result {
   const blockTime = useBlockInterval(trnApi);
 
   return useMemo(

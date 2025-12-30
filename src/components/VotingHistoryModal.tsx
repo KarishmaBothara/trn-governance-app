@@ -3,15 +3,15 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import * as React from "react";
-import {useProposalInfo} from "@/hooks/useProposal";
+// import {useProposalInfo} from "@/hooks/useProposal";
 import {useVotes} from "@/hooks/useVotes";
 // import {Proposal} from "../../generated/prisma";
-const leftIcon = "/../imports/left_icon.png";
+// const leftIcon = "/../imports/left_icon.png";
 
 interface VotingHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  referendum: any
+  referendum?: any
 }
 
 // Mock voting history data
@@ -54,8 +54,8 @@ interface VotingHistoryModalProps {
 // ];
 
 export function VotingHistoryModal({ isOpen, referendum, onClose }: VotingHistoryModalProps) {
+  const { data: voteData } = useVotes(referendum?.pId);
   if (!referendum) return;
-  const { data: voteData } = useVotes(referendum.pId);
   const votingHistory = voteData ? voteData : [];
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -111,7 +111,7 @@ export function VotingHistoryModal({ isOpen, referendum, onClose }: VotingHistor
               <h3 className="text-foreground">Voting History</h3>
 
               <div className="space-y-3">
-                {votingHistory.map((vote, index) => (
+                {votingHistory.map((vote: any, index: number) => (
                   <Card
                     key={index}
                     className="bg-card border border-border transition-all duration-200 hover:border-white/80"

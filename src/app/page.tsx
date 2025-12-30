@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/
 import { Button } from '@/components/ui/button';
 import { Vote } from 'lucide-react';
 import { UserProvider } from '@/components/UserContext';
+import { Proposal } from "@/components/ProposalCard";
 
 // Convert Figma asset to public path
 const backgroundImage = "/assets/governance-background.png";
@@ -65,10 +66,10 @@ const pageTransition = {
 export default function GovernancePage() {
   const [currentPage, setCurrentPage] = useState<NavigationItem>('dashboard');
   const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
-  const [selectedProposal, setSelectedProposal] = useState<string | null>(null);
-  const [selectedMotionId, setSelectedMotionId] = useState<string | null>(null);
-  const [selectedMotion, setSelectedMotion] = useState(null);
-  const [isCouncilMember, setIfCouncilMember] = useState(false);
+  const [selectedProposal, setSelectedProposal] = useState<Proposal |string | null >(null);
+  // const [selectedMotionId, setSelectedMotionId] = useState<string | null>(null);
+  const [selectedMotion, setSelectedMotion] = useState<any>(null);
+  const [isCouncilMember, setIfCouncilMember] = useState<any>(false);
   const [proposalsDefaultTab, setProposalsDefaultTab] = useState<'proposals' | 'referendums'>('proposals');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isVotingSectionVisible, setIsVotingSectionVisible] = useState(false);
@@ -211,7 +212,7 @@ export default function GovernancePage() {
       case 'submit-proposal':
         return <SubmitProposal onNavigate={handleNavigation} />;
       case 'proposal-detail':
-        return <ProposalDetail proposal={selectedProposal} onNavigate={handleNavigation} />;
+        return <ProposalDetail proposal={selectedProposal as Proposal} onNavigate={handleNavigation} />;
       case 'referendum-detail':
         return <ReferendumDetail referendumId={selectedProposalId} onNavigate={handleNavigation} />;
       case 'council':

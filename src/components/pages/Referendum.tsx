@@ -1,28 +1,30 @@
-import { useState, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
 import * as React from 'react';
-import { NavigationItem } from '@/app/page';
-import { Button } from '../ui/button';
+// import { NavigationItem } from '@/app/page';
+// import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Slider } from '../ui/slider';
-import { Input } from '../ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
-import { VotingHistoryModal } from '../VotingHistoryModal';
-import { ConnectWalletButton } from '../ConnectWalletButton';
-import { ArrowLeft, ArrowUp, ArrowDown, AlertTriangle, Clock, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { useUser } from '../UserContext';
-import { mockCancellationMotions } from '../council/mockData';
-import { CancellationMotion, CancellationVote, CancellationVoteType } from '../council/types';
+// import { Slider } from '../ui/slider';
+// import { Input } from '../ui/input';
+// import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
+// import { VotingHistoryModal } from '../VotingHistoryModal';
+// import { ConnectWalletButton } from '../ConnectWalletButton';
+// import { ArrowLeft, ArrowUp, ArrowDown, AlertTriangle, Clock, X } from 'lucide-react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
+// import { toast } from 'sonner';
+// import { useUser } from '../UserContext';
+// import { mockCancellationMotions } from '../council/mockData';
+// import { CancellationMotion, CancellationVote, CancellationVoteType } from '../council/types';
 import {useBestNumber} from "@/hooks/useBestNumber";
 import {useBlockTime} from "@/hooks/useBlockTime";
 import {useTrnApi} from "@futureverse/transact-react";
 import {BN_ONE} from "@polkadot/util";
 import { motion } from 'motion/react';
+import { ApiPromise } from "@polkadot/api";
 
-interface ReferendumDetailProps {
-  referendumId: string | null;
-  onNavigate: (page: NavigationItem) => void;
-}
+// interface ReferendumDetailProps {
+//   referendumId: string | null;
+//   onNavigate: (page: NavigationItem) => void;
+// }
 
 interface Referendum {
   id: string;
@@ -56,19 +58,20 @@ const getStatusBadgeClass = (status: string) => {
       return 'bg-muted/20 text-muted-foreground';
   }
 };
-const getTrackColor = () /*(track: string)*/ => {
-  return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-};
+// const getTrackColor = () /*(track: string)*/ => {
+//   return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+// };
 
 export function Referendum({ referendum, onSelect }: { referendum: Referendum, onSelect: () => void }) {
-  const {id, title, track, proposer, proposerAvatar, status, ayeVotes, nayVotes, ayePercentage, nayPercentage, conviction, submittedDate, bondedAmount } = referendum;
+  // const {id, title, track, proposer, proposerAvatar, status, ayeVotes, nayVotes, ayePercentage, nayPercentage, conviction, submittedDate, bondedAmount } = referendum;
+  const { status } = referendum;
   const { trnApi } = useTrnApi();
   const { data: bestNumber } = useBestNumber();
-  const enactBlock = status.end.add(status.delay);
+  // const enactBlock = status.end.add(status.delay);
   const remainBlock = status.end.sub(bestNumber).isub(BN_ONE);
 
-  const [, votingPeriodHours] = useBlockTime(remainBlock, trnApi);
-  const [, enactmentDate] = useBlockTime(enactBlock.sub(bestNumber), trnApi);
+  const [, votingPeriodHours] = useBlockTime(remainBlock, trnApi as ApiPromise);
+  // const [, enactmentDate] = useBlockTime(enactBlock.sub(bestNumber), trnApi);
   if (!bestNumber || status.end.sub(bestNumber).lten(0)) {
     return null;
   }

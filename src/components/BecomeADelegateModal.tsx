@@ -9,7 +9,6 @@ import { Card, CardContent } from './ui/card';
 // import { Separator } from './ui/separator';
 import { User, Twitter, MessageCircle, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUser } from './UserContext';
 import { ConnectWalletButton } from './ConnectWalletButton';
 import { useAuth } from "@futureverse/auth-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";

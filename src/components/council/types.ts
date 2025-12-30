@@ -1,7 +1,7 @@
 import { NavigationItem } from '@/app/page';
 import {V2WeightConstruct} from "@/hooks/useWeight";
 
-export type MotionStatus = 'proposed' | 'voting' | 'passed' | 'rejected' | 'cancelled';
+export type MotionStatus = 'proposed' | 'voting' | 'passed' | 'rejected' | 'cancelled' | 'Cancelled';
 export type VoteType = 'second' | 'close' | 'aye' | 'nay' | 'abstain';;
 export type CancellationVoteType = 'cancel' | 'against';
 import type { BN } from '@polkadot/util';
@@ -20,7 +20,7 @@ export interface CancellationMotion {
   id: string;
   referendumId: string;
   referendumTitle: string;
-  proposer: CouncilMember;
+  // proposer: CouncilMember;
   status: 'active' | 'passed' | 'failed';
   votesFor: number;
   votesAgainst: number;
@@ -28,6 +28,12 @@ export interface CancellationMotion {
   requiredVotes: number; // 2/3 majority
   remainingTimeMs: number;
   submittedDate: string;
+  title: string;
+  idx: string;
+  totalVotes: number;
+  threshold: number;
+  summary: string;
+  proposer: any;
 }
 
 export interface Motion {
@@ -46,9 +52,7 @@ export interface Motion {
   totalMembers: number;
   secondsNeeded: number;
   secondsReceived: number;
-  proposer: {
-    name: string;
-  };
+  proposer: string;
   description?: string;
   details?: string;
   hash?: string;
@@ -66,6 +70,19 @@ export interface Motion {
   votesNeededToPass: number;
   userVote?: 'aye' | 'nay' | null;
   canCancel: boolean;
+  votes: any;
+  proposal: any;
+  proposalType: any;
+  idx: number | string;
+  totalVotes: number;
+  preimage: string;
+  type: string;
+  createdAt: string;
+  summary: string;
+  section: string;
+  method: string;
+  args: any;
+  threshold: number;
 }
 
 export interface CouncilMember {
@@ -105,5 +122,5 @@ export interface CouncilProps {
   onNavigate: (page: NavigationItem) => void;
   onSelectProposal: (id: string) => void;
   onSelectMotion: (id: Motion) => void;
-  setIsCouncilMember: (isMem: true) => void;
+  setIfCouncilMember: (isMem: string | boolean) => void;
 }

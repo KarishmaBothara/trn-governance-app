@@ -6,7 +6,7 @@ import { ProposalCard } from '../ProposalCard';
 import { FeatureCard } from '../FeatureCard';
 import { Send, ArrowRightLeft, LayoutGrid } from 'lucide-react';
 import {useProposalInfo} from "@/hooks/useProposal";
-const imgLeftIcon = "/../../imports/left_icon.png";
+// const imgLeftIcon = "/../../imports/left_icon.png";
 
 
 interface GovernanceHubProps {
@@ -16,19 +16,19 @@ interface GovernanceHubProps {
 
 type ProposalTab = 'queued' | 'active' | 'history';
 
-interface Proposal {
-  id: string;
-  title: string;
-  status: 'queued' | 'active' | 'passed' | 'rejected' | 'fast-tracked';
-  track: string;
-  daysLeft: number;
-  proposalNumber: string;
-  description: string;
-  aye: number;
-  nay: number;
-  proposer: string;
-  proposerAvatar?: string;
-}
+// interface Proposal {
+//   id: string;
+//   title: string;
+//   status: 'queued' | 'active' | 'passed' | 'rejected' | 'fast-tracked';
+//   track: string;
+//   daysLeft: number;
+//   proposalNumber: string;
+//   description: string;
+//   aye: number;
+//   nay: number;
+//   proposer: string;
+//   proposerAvatar?: string;
+// }
 
 // Mock proposal data with accurate 28-day scheduling cycles
 // const mockProposals: Proposal[] = [
@@ -142,11 +142,11 @@ export function GovernanceHub({ onNavigate, onSelectProposal }: GovernanceHubPro
   const getFilteredProposals = () => {
     switch (activeTab) {
       case 'queued':
-        return proposals.filter(p => p.status === 'queued');
+        return proposals.filter((p: any) => p.status === 'queued');
       case 'active':
-        return proposals.filter(p => p.status === 'active');
+        return proposals.filter((p: any) => p.status === 'active');
       case 'history':
-        return proposals.filter(p => p.status === 'passed' || p.status === 'rejected');
+        return proposals.filter((p: any) => p.status === 'passed' || p.status === 'rejected');
       default:
         return proposals;
     }
@@ -236,7 +236,7 @@ export function GovernanceHub({ onNavigate, onSelectProposal }: GovernanceHubPro
         {/* Tab Content */}
         <div className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {getFilteredProposals().map((proposal) => (
+            {getFilteredProposals().map((proposal: any) => (
               <ProposalCard
                 key={proposal.id}
                 proposal={proposal}

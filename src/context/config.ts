@@ -7,10 +7,10 @@ import { mainnet, root, rootPorcini, sepolia } from "viem/chains";
 import { cookieStorage, createStorage } from "wagmi";
 
 const clientId = 'RjPFUvXxJ3cTnNJJwJ2YX'; //import.meta.env.VITE_CLIENT_ID;
-const walletConnectProjectId =
+// const walletConnectProjectId =
   // import.meta.env.VITE_WALLET_CONNECTOR_PROJECT_ID ||
-  "8b9b9cf8501efbce91cd5a15157c01c4";
-const xamanAPIKey = "5376fa18-f6d8-45d6-98df-cfdbc6b3b62b";
+  // "8b9b9cf8501efbce91cd5a15157c01c4";
+// const xamanAPIKey = "5376fa18-f6d8-45d6-98df-cfdbc6b3b62b";
   // import.meta.env.VITE_XAMAN_API_KEY || "5376fa18-f6d8-45d6-98df-cfdbc6b3b62b";
 const redirectUri = 'http://localhost:3000/';//import.meta.env.VITE_REDIRECT_URI;
 const signinFlow = 'redirect';

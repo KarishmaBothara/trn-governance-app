@@ -2,7 +2,7 @@ import { useTrnApi } from '@futureverse/transact-react';
 
 import { useQuery } from "@tanstack/react-query";
 import { DeriveReferendumExt } from "@polkadot/api-derive/types";
-import { ProposalType } from "../../generated/prisma";
+// import { ProposalType } from "../../generated/prisma";
 
 export function useReferendumInfo() {
     const { trnApi } = useTrnApi();
@@ -16,7 +16,7 @@ export function useReferendumInfo() {
             const referendums: DeriveReferendumExt[] = await trnApi.derive.democracy.referendums();
             console.log("Referendums::", referendums);
             if (!referendums || referendums.length === 0) return [];
-            const hashes = referendums.map(r => r.status.proposal.toJSON().lookup.hash.toString());
+            const hashes = referendums.map((r: DeriveReferendumExt) => r.status.proposal.toJSON().lookup.hash.toString());
             console.log('hashes::',hashes);
 
             const response = await fetch(`/api/proposals?indexes=${JSON.stringify(hashes)}`, {
@@ -29,11 +29,11 @@ export function useReferendumInfo() {
             const data = await response.json();
             if (!data) return [];
             const { proposalDBInfo } = data;
-            return referendums.map(p => {
+            return referendums.map((p: any) => {
                 const hash = p.status.proposal.toJSON().lookup.hash.toString();
                 const refIdx = p.index.toNumber();
                 p.refIdx = refIdx;
-                const dbDetails = proposalDBInfo.find(proposal => proposal.hash === hash);
+                const dbDetails = proposalDBInfo.find((proposal: any) => proposal.hash === hash);
                 return { ...dbDetails, ...p }
             });
         },

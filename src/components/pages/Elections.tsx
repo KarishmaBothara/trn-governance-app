@@ -11,28 +11,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 // import { Clock, Plus, Vote, ArrowUp, ArrowDown, Users, Crown, Award, AlertCircle, ChevronDown } from 'lucide-react';
 import { Plus, Vote, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUser } from '../UserContext';
+// import { useUser } from '../UserContext';
 import {useAuth} from "@futureverse/auth-react";
 import {useSigner} from "@/hooks/useSigner";
 import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
 import {useTrnApi} from "@futureverse/transact-react";
 import {useCouncilMembers} from "@/hooks/useCouncilMembers";
-import {nominate, vote} from "@/lib/utils";
+// import {nominate, vote} from "@/lib/utils";
+import {nominate} from "@/lib/utils";
 
 // interface ElectionsProps {
 //   onNavigate: (page: NavigationItem) => void;
 // }
 
-interface Candidate {
-  id: string;
-  name: string;
-  address: string;
-  description: string;
-  supportWeight: string;
-  votes: number;
-  isCurrentMember: boolean;
-  hasUserVoted: boolean;
-}
+// interface Candidate {
+//   id: string;
+//   name: string;
+//   address: string;
+//   description: string;
+//   supportWeight: string;
+//   votes: number;
+//   isCurrentMember: boolean;
+//   hasUserVoted: boolean;
+// }
 
 interface ElectionConfig {
   candidacyBond: number;
@@ -144,7 +145,7 @@ export function Elections() {
   // const { isLoggedIn, userProfile } = useUser();
   const { userSession } = useAuth();
   const eoa = userSession?.eoa;
-  const fpass = userSession?.futurepass;
+  // const fpass = userSession?.futurepass;
   const signer = useSigner();
   const { trnApi } = useTrnApi();
   const builder = useCustomExtrinsicBuilder({
@@ -152,7 +153,7 @@ export function Elections() {
     walletAddress: userSession?.eoa ?? "",
     trnApi,
   });
-  const [isCouncilMember, setIsCouncilMember] = useState(false);
+  // const [isCouncilMember, setIsCouncilMember] = useState(false);
   // const { isLoggedIn, userRole, userProfile } = useUser();
   const userProfile = (userSession?.user?.profile?.profile as any)?.selectedProfile || {};
   // const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
@@ -163,7 +164,7 @@ export function Elections() {
   const [termCountdown, setTermCountdown] = useState<string>('');
   const [sortBy, setSortBy] = useState<'support-weight' | 'alphabet'>('support-weight');
   const { data: councilMembers } = useCouncilMembers();
-  const candidates = councilMembers?.filter(cm => cm.verified === false) || [];
+  const candidates = councilMembers?.filter((cm: any) => cm.verified === false) || [];
 
   // Nomination form state
   const [nominationForm, setNominationForm] = useState({
@@ -602,7 +603,7 @@ export function Elections() {
           </DialogHeader>
 
           <div className="space-y-4 py-4 max-h-96 overflow-y-auto">
-            {candidates.map((candidate) => (
+            {candidates.map((candidate: any) => (
               <div
                 key={candidate.id}
                 className={`p-4 rounded-lg border cursor-pointer transition-all ${

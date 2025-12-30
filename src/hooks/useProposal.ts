@@ -2,7 +2,7 @@ import { useTrnApi } from '@futureverse/transact-react';
 
 import { useQuery } from "@tanstack/react-query";
 import { DeriveProposal } from "@polkadot/api-derive/democracy/types";
-import {ProposalType} from "../../generated/prisma";
+//import {ProposalType} from "../../generated/prisma";
 
 export function useProposalInfo() {
     const { trnApi } = useTrnApi();
@@ -24,9 +24,9 @@ export function useProposalInfo() {
             const data = await response.json();
             if (!data) return [];
             const { proposalDBInfo } = data;
-            return proposalDBInfo.map(p => {
+            return proposalDBInfo.map((p: any) => {
                 const proposalId = p.idx;
-                const proposalOnChain = proposals.find(proposal => proposal.index.toNumber() === proposalId);
+                const proposalOnChain = proposals.find((proposal: any) => proposal.index.toNumber() === proposalId);
                 if (proposalOnChain) {
                     p.status = 'queued'
                     return { ...p, ...proposalOnChain }

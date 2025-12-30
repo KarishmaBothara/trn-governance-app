@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import {ProposalStatus, ProposalType} from "../../generated/prisma";
+import {ProposalStatus} from "../../generated/prisma";
 
 export function useOldCouncilProposal() {
 
@@ -19,7 +19,7 @@ export function useOldCouncilProposal() {
             console.log("***************");
             console.log("Data:", data);
             const { proposalDBInfo } = data;
-            return proposalDBInfo.filter(p => p.status !== ProposalStatus.Processing);
+            return proposalDBInfo.filter((p: any) => p.status !== ProposalStatus.Processing);
         },
         // enabled: !!trnApi?.isReady,
         refetchInterval: 60000,

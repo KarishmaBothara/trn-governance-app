@@ -12,11 +12,11 @@ import { DelegateVotingModal } from '../DelegateVotingModal';
 import { BecomeADelegateModal } from '../BecomeADelegateModal';
 import { ConnectWalletButton } from '../ConnectWalletButton';
 import { toast } from 'sonner';
-import { useUser } from '../UserContext';
+// import { useUser } from '../UserContext';
 import {NavigationItem} from "@/app/page";
 import { useAuth } from "@futureverse/auth-react";
 import {useDelegates} from "@/hooks/useDelegates";
-import {useCouncilMembers} from "@/hooks/useCouncilMembers";
+// import {useCouncilMembers} from "@/hooks/useCouncilMembers";
 
 interface Delegate {
   id: string;
@@ -59,84 +59,84 @@ const mockUserDelegations: UserDelegation[] = [
   },
 ];
 
-const mockDelegates: Delegate[] = [
-  {
-    id: '1',
-    name: 'FV Seona',
-    address: '0vndh8..94803',
-    votingPower: 837000,
-    totalDelegators: 837,
-    participation: 837,
-    description: 'Biompatible approach, in which now XC-20s are actual ERC-20 tokens with EVM bytecode, the XCM fee approach was changed to use a we.',
-    socialLinks: {
-      discord: '#',
-      twitter: '#'
-    },
-    tracks: ['Track name', 'Track name', 'Track name', 'Track name'],
-    votingHistory: [
-      { proposalId: '1', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-      { proposalId: '2', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-      { proposalId: '3', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-    ]
-  },
-  {
-    id: '2',
-    name: 'FV Seona',
-    address: '0vndh8..94803',
-    votingPower: 837000,
-    totalDelegators: 837,
-    participation: 837,
-    description: 'Biompatible approach, in which now XC-20s are actual ERC-20 tokens with EVM bytecode, the XCM fee approach was changed to use a we.',
-    socialLinks: {
-      discord: '#',
-      twitter: '#'
-    },
-    tracks: ['Track name', 'Track name', 'Track name', 'Track name'],
-    votingHistory: [
-      { proposalId: '1', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-      { proposalId: '2', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-      { proposalId: '3', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-    ]
-  },
-  {
-    id: '3',
-    name: 'FV Seona',
-    address: '0vndh8..94803',
-    votingPower: 837000,
-    totalDelegators: 837,
-    participation: 837,
-    description: 'Biompatible approach, in which now XC-20s are actual ERC-20 tokens with EVM bytecode, the XCM fee approach was changed to use a we.',
-    socialLinks: {
-      discord: '#',
-      twitter: '#'
-    },
-    tracks: ['Track name', 'Track name', 'Track name', 'Track name'],
-    votingHistory: [
-      { proposalId: '1', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-      { proposalId: '2', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-      { proposalId: '3', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-    ]
-  },
-  {
-    id: '4',
-    name: 'FV Seona',
-    address: '0vndh8..94803',
-    votingPower: 837000,
-    totalDelegators: 837,
-    participation: 837,
-    description: 'Biompatible approach, in which now XC-20s are actual ERC-20 tokens with EVM bytecode, the XCM fee approach was changed to use a we.',
-    socialLinks: {
-      discord: '#',
-      twitter: '#'
-    },
-    tracks: ['Track name', 'Track name', 'Track name', 'Track name'],
-    votingHistory: [
-      { proposalId: '1', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-      { proposalId: '2', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-      { proposalId: '3', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
-    ]
-  },
-];
+// const mockDelegates: Delegate[] = [
+//   {
+//     id: '1',
+//     name: 'FV Seona',
+//     address: '0vndh8..94803',
+//     votingPower: 837000,
+//     totalDelegators: 837,
+//     participation: 837,
+//     description: 'Biompatible approach, in which now XC-20s are actual ERC-20 tokens with EVM bytecode, the XCM fee approach was changed to use a we.',
+//     socialLinks: {
+//       discord: '#',
+//       twitter: '#'
+//     },
+//     tracks: ['Track name', 'Track name', 'Track name', 'Track name'],
+//     votingHistory: [
+//       { proposalId: '1', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//       { proposalId: '2', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//       { proposalId: '3', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//     ]
+//   },
+//   {
+//     id: '2',
+//     name: 'FV Seona',
+//     address: '0vndh8..94803',
+//     votingPower: 837000,
+//     totalDelegators: 837,
+//     participation: 837,
+//     description: 'Biompatible approach, in which now XC-20s are actual ERC-20 tokens with EVM bytecode, the XCM fee approach was changed to use a we.',
+//     socialLinks: {
+//       discord: '#',
+//       twitter: '#'
+//     },
+//     tracks: ['Track name', 'Track name', 'Track name', 'Track name'],
+//     votingHistory: [
+//       { proposalId: '1', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//       { proposalId: '2', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//       { proposalId: '3', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//     ]
+//   },
+//   {
+//     id: '3',
+//     name: 'FV Seona',
+//     address: '0vndh8..94803',
+//     votingPower: 837000,
+//     totalDelegators: 837,
+//     participation: 837,
+//     description: 'Biompatible approach, in which now XC-20s are actual ERC-20 tokens with EVM bytecode, the XCM fee approach was changed to use a we.',
+//     socialLinks: {
+//       discord: '#',
+//       twitter: '#'
+//     },
+//     tracks: ['Track name', 'Track name', 'Track name', 'Track name'],
+//     votingHistory: [
+//       { proposalId: '1', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//       { proposalId: '2', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//       { proposalId: '3', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//     ]
+//   },
+//   {
+//     id: '4',
+//     name: 'FV Seona',
+//     address: '0vndh8..94803',
+//     votingPower: 837000,
+//     totalDelegators: 837,
+//     participation: 837,
+//     description: 'Biompatible approach, in which now XC-20s are actual ERC-20 tokens with EVM bytecode, the XCM fee approach was changed to use a we.',
+//     socialLinks: {
+//       discord: '#',
+//       twitter: '#'
+//     },
+//     tracks: ['Track name', 'Track name', 'Track name', 'Track name'],
+//     votingHistory: [
+//       { proposalId: '1', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//       { proposalId: '2', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//       { proposalId: '3', title: 'Proposal title goes here', date: '12 July 2025', vote: 'aye' },
+//     ]
+//   },
+// ];
 
 interface DelegateProps {
   onNavigate: (page: NavigationItem) => void;
@@ -146,8 +146,8 @@ interface DelegateProps {
 export function Delegate({ onNavigate, onSelectProposal }: DelegateProps) {
   // const { isLoggedIn } = useUser();
   const { userSession } = useAuth();
-  const eoa = userSession?.eoa;
-  const fpass = userSession?.futurepass;
+  // const eoa = userSession?.eoa;
+  // const fpass = userSession?.futurepass;
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('Popular');
   const [selectedDelegate, setSelectedDelegate] = useState<Delegate | null>(null);
@@ -159,7 +159,7 @@ export function Delegate({ onNavigate, onSelectProposal }: DelegateProps) {
   const [selectedDelegationToRevoke, setSelectedDelegationToRevoke] = useState<{delegate: Delegate, delegation: UserDelegation} | null>(null);
   const { data: delegateInfo } = useDelegates();
 
-  const filteredDelegates = delegateInfo ? delegateInfo.filter((delegate) =>
+  const filteredDelegates = delegateInfo ? delegateInfo.filter((delegate: any) =>
     delegate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     delegate.address.toLowerCase().includes(searchTerm.toLowerCase())
   ) : [];
@@ -329,7 +329,7 @@ export function Delegate({ onNavigate, onSelectProposal }: DelegateProps) {
 
       {/* Delegates Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
-        {filteredDelegates.map((delegate) => (
+        {filteredDelegates.map((delegate: any) => (
           <Card key={delegate.id} className="bg-card border border-border cursor-pointer hover:border-white/80 transition-all duration-200">
             <CardContent className="p-5">
               <div className="space-y-6">

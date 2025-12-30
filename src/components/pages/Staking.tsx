@@ -1,6 +1,6 @@
 import { Card, CardContent } from '../ui/card';
 import { Info, ExternalLink } from 'lucide-react';
-import Root from '../../imports/Root-99-709';
+// import Root from '../../imports/Root-99-709';
 
 export function Staking() {
   return (

@@ -16,7 +16,7 @@ export function formatBalance(balance: BigNumber | undefined): string {
 
 }
 
-export async function updateVote(voter, refIndex, isAye, amount, pId) {
+export async function updateVote(voter: string, refIndex: number, isAye: boolean, amount: string, pId: number) {
     try {
         const response = await fetch('/api/votes', {
             method: 'POST',
@@ -200,7 +200,7 @@ export function approxChanges (threshold: VoteThreshold, sqrtElectorate: BN, sta
 }
 
 
-export const closeVote = async (tx, toast, motionId ) => {
+export const closeVote = async (tx: any, toast: any, motionId: string ) => {
     const res = await tx.signAndSend({
         onSign: () => {
             toast.info('Signing', {
@@ -212,10 +212,10 @@ export const closeVote = async (tx, toast, motionId ) => {
         }
     });
     const { result } = res;
-    const event = result?.events.find((event) => {
+    const event = result?.events.find((event: any) => {
         return event.event.section === "council" && event.event.method === "Closed";
     });
-    const proposalApproved = result?.events.find((event) => {
+    const proposalApproved = result?.events.find((event: any) => {
         return event.event.section === "council" && event.event.method === "Approved";
     });
     // const proposalDisapproved = result?.events.find((event) => {
@@ -249,7 +249,7 @@ export const closeVote = async (tx, toast, motionId ) => {
 };
 
 
-export const vote = async (tx, toast, motionId ) => {
+export const vote = async (tx: any, toast: any, motionId: string) => {
     const res = await tx.signAndSend({
         onSign: () => {
             toast.info('Signing', {
@@ -261,7 +261,7 @@ export const vote = async (tx, toast, motionId ) => {
         }
     });
     const { result } = res;
-    const event = result?.events.find((event) => {
+    const event = result?.events.find((event: any) => {
         return event.event.section === "council" && event.event.method === "Voted";
     });
 
@@ -304,7 +304,7 @@ export const vote = async (tx, toast, motionId ) => {
 
 
 
-export const nominate = async (tx, toast, candidate ) => {
+export const nominate = async (tx: any, toast: any, candidate: any ) => {
     const res = await tx.signAndSend({
         onSign: () => {
             toast.info('Signing', {
@@ -316,7 +316,7 @@ export const nominate = async (tx, toast, candidate ) => {
         }
     });
     const { result } = res;
-    const event = result?.events.find((event) => {
+    const event = result?.events.find((event: any) => {
         return event.event.section === "elections" && event.event.method === "CandidateAdded";
     });
 

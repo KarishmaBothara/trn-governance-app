@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     try {
        const prisma: PrismaClient = await getPrismaClient();
         const {searchParams} = new URL(request.url)
-        const pId = searchParams.get('pId');
+        const pId: string = searchParams.get('pId') as string;
         const voteData = await prisma.votes.findMany({
             where: { pId: parseInt(pId) }
         });

@@ -24,9 +24,9 @@ export function useCouncilMembers() {
             const data = await response.json();
             if (!data) return [];
             const { councilInfo } = data;
-            return members.map(([member, balanceHex]) => {
+            return members.map(([member , balanceHex]: [string, string]) => {
                 const balance = hexToNumber(balanceHex);
-                const dbDetails = councilInfo.find(c => c.address.toLowerCase() === member.toString().toLowerCase());
+                const dbDetails = councilInfo.find((c: any) => c.address.toLowerCase() === member.toString().toLowerCase());
                 const obj = { ...{ balance: balance }, ...dbDetails };
                 return obj;
             });

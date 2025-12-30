@@ -63,8 +63,8 @@ export function useVotingStatus (votes: Votes | null | undefined, numMembers: nu
     return useMemo(
         () => {
           try {
-            return bestNumber && votes
-                ? getStatus(trnApi, bestNumber, votes, numMembers, section)
+            return bestNumber && votes && trnApi
+                ? getStatus(trnApi, bestNumber as BlockNumber, votes, numMembers, section)
                 : DEFAULT_STATUS;
           } catch (e) {
             console.log("Err::", e);

@@ -1,22 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NavigationItem } from '@/app/page';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 // import { Card, CardContent } from '../ui/card';
 import { ArrowLeft, ArrowUp, ArrowDown, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUser } from '../UserContext';
-import { mockMotions } from '../council/mockData';
-import { Motion, VoteType, UserVote } from '../council/types';
-import {useCouncilProposals} from "@/hooks/useCouncilProposals";
-import {useBlockTime} from "@/hooks/useBlockTime";
+import { Motion,  UserVote } from '../council/types';
 import {useTrnApi} from "@futureverse/transact-react";
 import {useAuth} from "@futureverse/auth-react";
 // import {SelectContent, SelectItem} from "@/components/ui/select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import {useSigner} from "@/hooks/useSigner";
 import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
-import {ProposalStatus, ProposalType} from "../../../generated/prisma";
+import {ProposalType} from "../../../generated/prisma";
 import {closeVote, vote} from "@/lib/utils";
 
 interface MotionDetailProps {
@@ -37,7 +33,7 @@ export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDeta
   });
   const [userVotes, setUserVotes] = useState<UserVote[]>([]);
   const [account, setAccount] = useState<string>('EOA');
-  const [timeRemaining, setTimeRemaining] = useState<string>('');
+  const [timeRemaining, ] = useState<string>('');
 
   // Find the motion by ID (in real app this would fetch from API)
   // const motion = mockMotions.find(m => m.id === motionId);
@@ -48,7 +44,7 @@ export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDeta
   };
 
   const handleCloseVote = async () => {
-    if (!signer || !userSession || !trnApi || !builder) return;
+    if (!signer || !userSession || !trnApi || !builder || !motion) return;
     const extrinsic = trnApi.tx.council.close(motion.hash || motion.preimage, motion?.idx, motion.weight, motion.encodedCallLength );
 
     const tx = account === 'FPass' ? await builder
@@ -173,7 +169,7 @@ export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDeta
   // }, [detailedMotion?.remainingTimeMs, detailedMotion?.status]);
 
   const handleVote = async(aye: boolean) => {
-    if (!motion.idx || !isCouncilMember) return;
+    if (!motion || !motion.idx || !isCouncilMember) return;
     if (!signer || !userSession || !trnApi || !builder) return;
     const extrinsic = trnApi.tx.council.vote(motion.hash || motion.preimage, motion?.idx, aye);
 
@@ -209,13 +205,13 @@ export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDeta
 
 
   const handleCancelMotion = () => {
-    if (!motion.idx || !isCouncilMember || !detailedMotion?.canCancel) return;
+    if (!motion || !motion.idx || !isCouncilMember || !detailedMotion?.canCancel) return;
 
     toast.success(`Motion ${motion.idx} has been cancelled`);
     // In a real app, this would update the motion status
   };
 
-  if (!motion.idx) {
+  if (!motion || !motion.idx) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">No motion selected</p>
@@ -238,7 +234,7 @@ export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDeta
   }
 
   const userVote = userVotes.find(vote => vote.motionId === motion.idx);
-  const hasSecondedMotion = userVote?.voteType === 'second';
+  // const hasSecondedMotion = userVote?.voteType === 'second';
   const hasVotedToClose = userVote?.voteType === 'close';
   const hasVotedAye = userVote?.voteType === 'aye' || detailedMotion?.userVote === 'aye';
   const hasVotedNay = userVote?.voteType === 'nay' || detailedMotion?.userVote === 'nay';
@@ -564,7 +560,7 @@ export function MotionDetail({ motion, isCouncilMember, onNavigate }: MotionDeta
                             <Button
                               variant="outline"
                               className="flex-1 h-10"
-                              onClick={() => handleVote(hasVotedAye ? 'nay' : 'aye')}
+                              onClick={() => handleVote(hasVotedAye ? false : true)}
                               disabled={detailedMotion.status === 'cancelled'}
                             >
                               Change Vote
