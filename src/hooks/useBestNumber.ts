@@ -9,7 +9,7 @@ export function useBestNumber() {
 
     return useQuery({
         queryKey: ["bestNumber"],
-        queryFn: async (): Promise<BlockNumber | undefined> => {
+        queryFn: async (): Promise<BlockNumber | number | undefined | typeof BN_ONE> => {
             console.log("trnApi?.isReady");
             if (!trnApi?.isReady) return BN_ONE;
             console.log("Inside use useQuery info....");

@@ -77,11 +77,11 @@ export function useWeight (call?: Call | null): Result {
   const { trnApi } = useTrnApi();
   const [state, setState] = useState<Result>(() => objectSpread({
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    isWeightV2: !isFunction(trnApi.registry.createType<V1Weight>('Weight').toBn)
+    isWeightV2: !isFunction(trnApi?.registry.createType<V1Weight>('Weight').toBn)
   }, EMPTY_STATE));
 
   useEffect((): void => {
-    if (call && trnApi.call.transactionPaymentApi) {
+    if (call && trnApi && trnApi.call.transactionPaymentApi) {
       nextTick(async (): Promise<void> => {
         try {
           const { v1Weight, v2Weight } = convertWeight(

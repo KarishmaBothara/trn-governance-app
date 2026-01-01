@@ -35,7 +35,7 @@ export async function POST(
 }
 
 // GET - Fetch proposals with filtering options
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const prisma: PrismaClient = await getPrismaClient();
         const proposalDBInfo: Proposal[] = await prisma.proposal.findMany({

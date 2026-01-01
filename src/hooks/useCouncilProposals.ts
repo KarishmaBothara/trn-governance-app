@@ -2,10 +2,6 @@ import { useTrnApi } from '@futureverse/transact-react';
 
 import { useQuery } from "@tanstack/react-query";
 import {DeriveCollectiveProposal} from "@polkadot/api-derive/types";
-import {ProposalType} from "../../generated/prisma";
-import {hexToNumber} from "@polkadot/util";
-import {useVotingStatus} from "@/hooks/useVotingStatus";
-import {useBestNumber} from "@/hooks/useBestNumber";
 
 export function useCouncilProposals() {
     const { trnApi } = useTrnApi();
@@ -16,9 +12,7 @@ export function useCouncilProposals() {
             if (!trnApi?.isReady) return [];
 
             const councilMotions: DeriveCollectiveProposal[] = await trnApi.derive.council.proposals();
-            const councilMembers = await trnApi.query.council.members();
             if (!councilMotions || councilMotions.length === 0) return [];
-            const councilMembersLen = councilMembers.length;
 
             const response = await fetch(`/api/councilProposals`, {
                 method: "GET"
@@ -26,13 +20,12 @@ export function useCouncilProposals() {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const bestBlock = await trnApi.derive.chain.bestNumber();
             const data = await response.json();
             if (!data) return [];
             const { proposalDBInfo } = data;
-            return councilMotions.map(cm => {
+            return councilMotions.map((cm: any) => {
                 // const idx = hexToNumber(cm.proposal.callIndex.toHex());
-                const dbDetails = proposalDBInfo.find(proposal => (proposal.preimage.toLowerCase() === cm.hash.toString().toLowerCase()) ||
+                const dbDetails = proposalDBInfo.find((proposal: any) => (proposal.preimage.toLowerCase() === cm.hash.toString().toLowerCase()) ||
                     (proposal.hash.toLowerCase() === cm.hash.toString().toLowerCase()));
                 const voteDetails = cm.votes.toJSON();
 

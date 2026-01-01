@@ -1,31 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, CardContent } from '../ui/card';
 import { ArrowUp, ArrowDown, Clock } from 'lucide-react';
-import { Motion, UserVote, VoteType } from './types';
+import { Motion, UserVote } from './types';
 import { NavigationItem } from '@/app/page';
-import {useBlockTime} from "@/hooks/useBlockTime";
-import {useTrnApi} from "@futureverse/transact-react";
-import {useVotingStatus} from "@/hooks/useVotingStatus";
-import {useCouncilMembers} from "@/hooks/useCouncilMembers";
-import {useWeight} from "@/hooks/useWeight";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import { useBlockTime } from "@/hooks/useBlockTime";
+import { useTrnApi } from "@futureverse/transact-react";
+import { useVotingStatus } from "@/hooks/useVotingStatus";
+import { useCouncilMembers } from "@/hooks/useCouncilMembers";
+import { useWeight } from "@/hooks/useWeight";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import { ApiPromise } from "@polkadot/api";
 
 interface MotionCardProps {
   motion: Motion;
   userVotes: UserVote[];
-  onVote: (motionId: any, encodedCallLength: number, weight: any, voteType: VoteType, accountType: string) => void;
+  onVote: (motion: any, aye: boolean, accountType: string) => Promise<void>;
+  onClose: (motion: Motion, encodedCallLength: number, weight: any, close: string, account: string) => void;
   isCouncilMember: boolean;
   onNavigate?: (page: NavigationItem) => void;
   onSelectMotion?: (motion: Motion) => void;
+  setIfCouncilMember: (isMem: boolean | string) => void;
 }
 
 export function MotionCard({ motion, userVotes, onVote, onClose, isCouncilMember, onNavigate, onSelectMotion, setIfCouncilMember }: MotionCardProps) {
   const userVote = userVotes.find(vote => vote.motionId === motion.id);
   const { trnApi } = useTrnApi();
   const [account, setAccount] = useState<string>('EOA');
-  const hasSecondedMotion = userVote?.voteType === 'second';
   const hasVotedToClose = userVote?.voteType === 'close';
 
   const accountType = {
@@ -38,12 +40,12 @@ export function MotionCard({ motion, userVotes, onVote, onClose, isCouncilMember
 
   const threshold = motion?.votes.threshold?.toNumber();
   const proposal = motion?.proposal;
-  const hash = motion?.hash;
   const { encodedCallLength, weight } = useWeight(proposal);
 
-  const { hasFailed, isCloseable, isVoteable, remainingBlocks } = useVotingStatus(motion?.votes, councilMembers?.length || 5, 'council');
+  // const { hasFailed, isCloseable, isVoteable, remainingBlocks } = useVotingStatus(motion?.votes, councilMembers?.length || 5, 'council');
 
-  const [, timeRemaining] =  useBlockTime(remainingBlocks || 0, trnApi);
+  const { remainingBlocks } = useVotingStatus(motion?.votes, councilMembers?.length || 5, 'council');
+  const [, timeRemaining] =  useBlockTime(remainingBlocks || 0, trnApi as ApiPromise);
 
   // Countdown timer effect
   // useEffect(() => {

@@ -10,19 +10,19 @@ import { VotingHistoryModal } from '../VotingHistoryModal';
 import { ConnectWalletButton } from '../ConnectWalletButton';
 import { ArrowLeft, ArrowUp, ArrowDown, AlertTriangle, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { mockCancellationMotions } from '../council/mockData';
 import { CancellationMotion, CancellationVote, CancellationVoteType } from '../council/types';
-import {useReferendumInfo} from "@/hooks/useReferendums";
-import {useBestNumber} from "@/hooks/useBestNumber";
-import {useBlockTime} from "@/hooks/useBlockTime";
-import {BN_ONE} from "@polkadot/util";
-import {useTrnApi} from "@futureverse/transact-react";
-import {useAuth} from "@futureverse/auth-react";
-import {useSigner} from "@/hooks/useSigner";
-import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
-import {useCouncilMembers} from "@/hooks/useCouncilMembers";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {updateVote} from "@/lib/utils";
+import { useReferendumInfo } from "@/hooks/useReferendums";
+import { useBestNumber } from "@/hooks/useBestNumber";
+import { useBlockTime } from "@/hooks/useBlockTime";
+import { BN_ONE } from "@polkadot/util";
+import { useTrnApi } from "@futureverse/transact-react";
+import { useAuth } from "@futureverse/auth-react";
+import { useSigner } from "@/hooks/useSigner";
+import { useCustomExtrinsicBuilder } from "@/hooks/useCustomExtrinsicBuilder";
+import { useCouncilMembers } from "@/hooks/useCouncilMembers";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { updateVote } from "@/lib/utils";
+import { ApiPromise } from "@polkadot/api";
 
 interface ReferendumDetailProps {
   referendumId: string | null;
@@ -47,11 +47,11 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
   const [conviction, setConviction] = useState([2]);
   const [showVotingHistory, setShowVotingHistory] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancellationMotion, setCancellationMotion] = useState<CancellationMotion | null>(null);
+  const [cancellationMotion,] = useState<CancellationMotion | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [cancellationVotes, setCancellationVotes] = useState<CancellationVote[]>([]);
   const { data: referendumData } = useReferendumInfo();
-  const p = referendumData && referendumData.find(r => r.refIdx === referendumId);
+  const p = referendumData && referendumData.find((r: any) => r.refIdx === referendumId);
   const ayeVotes = p?.voteCountAye;
   const nayVotes = p?.voteCountNay;
   const totalVotes = ayeVotes + nayVotes;
@@ -59,11 +59,10 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
   const nayPercentage = 100 - ayePercentage;
   const status = p?.status;
   const { data: bestNumber } = useBestNumber();
-  const enactBlock = status?.end.add(status.delay);
   const remainBlock = status?.end.sub(bestNumber).isub(BN_ONE);
   const { data: councilMembers } = useCouncilMembers();
 
-  const [, votingPeriodHours] = useBlockTime(remainBlock, trnApi);
+  const [, votingPeriodHours] = useBlockTime(remainBlock, trnApi as ApiPromise);
 
   const [account, setAccount] = useState<string>('EOA');
   const accountType = {
@@ -71,26 +70,15 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
     'EOA': { label: 'EOA', description: 'Use eoa address' },
   };
 
-  if (!bestNumber || status?.end.sub(bestNumber).lten(0)) {
-    return null;
-  }
-
   useEffect(() => {
     if (councilMembers && eoa && fpass) {
-      const exist = councilMembers.find(cm => cm.address.toLowerCase() === eoa.toLowerCase() || cm.address.toLowerCase() === fpass.toLowerCase())
+      const exist = councilMembers.find((cm: any) => cm.address.toLowerCase() === eoa.toLowerCase() || cm.address.toLowerCase() === fpass.toLowerCase())
       if (exist) {
         setIsCouncilMember(true);
       }
     }
   }, [councilMembers, eoa, fpass]);
 
-  // Check if there's an active cancellation motion for this referendum
-  useEffect(() => {
-    const motion = mockCancellationMotions.find(
-      m => m.referendumId === referendumId && (m.status === 'active' || m.status === 'passed')
-    );
-    setCancellationMotion(motion || null);
-  }, [referendumId]);
 
   // Mock referendum data - status depends on cancellation motion result
   const referendum = {
@@ -176,6 +164,10 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
     }
   }, [existingVote]);
 
+  if (!bestNumber || status?.end.sub(bestNumber).lten(0)) {
+    return null;
+  }
+
   const handleVoteSubmit = async () => {
     // Call extrinsic to vote
     // Don't allow voting on cancelled referendums
@@ -224,16 +216,16 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
       onSend: async () => {
       }
     });
-    const { extrinsicId, transactionHash, result } = res;
+    // const { extrinsicId, transactionHash, result } = res;
+    const { result } = res;
     const event = result?.events.find((event) => {
-      if (!("event" in event)) return event.name === "democracy.Voted";
 
       return event.event.section === "democracy" && event.event.method === "Voted";
     });
     if (event) {
       const voter = event.event.data[0].toString();
-      const refIndex = event.event.data[1].toNumber();
-      const eventVote = event.event.data[2].toJSON();
+      const refIndex = (event.event.data[1] as any).toNumber();
+      const eventVote = (event.event.data[2] as any).toJSON();
       const isAye = eventVote.standard.vote === "0x83" ? true : false;
       const amount = eventVote.standard.balance;
       const pId = referendum.pId;
@@ -307,27 +299,27 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
     }
   };
 
-  const handleCancelReferendum = () => {
-    // Simulate proposing cancellation motion
-    const newMotion: CancellationMotion = {
-      id: `cancel-${Date.now()}`,
-      referendumId: referendumId!,
-      referendumTitle: referendum.title,
-      proposer: { id: 'current-user', name: 'Current User' } as any,
-      status: 'active',
-      votesFor: 1, // Proposer's vote
-      votesAgainst: 0,
-      totalMembers: 5,
-      requiredVotes: Math.ceil((5 * 2) / 3), // 2/3 majority
-      remainingTimeMs: 5 * 24 * 60 * 60 * 1000, // 5 days
-      submittedDate: new Date().toLocaleDateString()
-    };
-
-    setCancellationMotion(newMotion);
-    setShowCancelModal(false);
-
-    toast.success('Cancellation motion proposed successfully! Council members can now vote.');
-  };
+  // const handleCancelReferendum = () => {
+  //   // Simulate proposing cancellation motion
+  //   const newMotion: CancellationMotion = {
+  //     id: `cancel-${Date.now()}`,
+  //     referendumId: referendumId!,
+  //     referendumTitle: referendum.title,
+  //     proposer: { id: 'current-user', name: 'Current User' } as any,
+  //     status: 'active',
+  //     votesFor: 1, // Proposer's vote
+  //     votesAgainst: 0,
+  //     totalMembers: 5,
+  //     requiredVotes: Math.ceil((5 * 2) / 3), // 2/3 majority
+  //     remainingTimeMs: 5 * 24 * 60 * 60 * 1000, // 5 days
+  //     submittedDate: new Date().toLocaleDateString()
+  //   };
+  //
+  //   setCancellationMotion(newMotion);
+  //   setShowCancelModal(false);
+  //
+  //   toast.success('Cancellation motion proposed successfully! Council members can now vote.');
+  // };
 
   if (!referendumId) {
     return (
@@ -865,7 +857,7 @@ export function ReferendumDetail({ referendumId, onNavigate }: ReferendumDetailP
               Cancel
             </Button>
             <Button
-              onClick={handleCancelReferendum}
+              // onClick={handleCancelReferendum}
               className="bg-red-500 text-white hover:bg-red-600"
             >
               <AlertTriangle size={16} className="mr-2" />

@@ -23,16 +23,16 @@ function calcInterval (api: ApiPromise): BN {
     // Subspace
     api.consts.subspace?.expectedBlockTime || (
       // Check against threshold to determine value validity
-      api.consts.timestamp?.minimumPeriod.gte(THRESHOLD)
+        (api.consts.timestamp?.minimumPeriod as any).gte(THRESHOLD)
         // Default minimum period config
-        ? api.consts.timestamp.minimumPeriod.mul(BN_TWO)
+        ? (api.consts.timestamp.minimumPeriod as any).mul(BN_TWO)
         : api.query.parachainSystem
           // default guess for a parachain
           ? api.consts.aura?.slotDuration ?? DEFAULT_TIME.mul(BN_TWO)
           // default guess for others
           : DEFAULT_TIME
     )
-  ));
+  ) as any);
 }
 
 export function useBlockInterval (currApi?: ApiPromise | null): BN {

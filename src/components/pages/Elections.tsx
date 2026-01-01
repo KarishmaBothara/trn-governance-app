@@ -11,28 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 // import { Clock, Plus, Vote, ArrowUp, ArrowDown, Users, Crown, Award, AlertCircle, ChevronDown } from 'lucide-react';
 import { Plus, Vote, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUser } from '../UserContext';
-import {useAuth} from "@futureverse/auth-react";
-import {useSigner} from "@/hooks/useSigner";
-import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
-import {useTrnApi} from "@futureverse/transact-react";
-import {useCouncilMembers} from "@/hooks/useCouncilMembers";
-import {nominate, vote} from "@/lib/utils";
+import { useAuth } from "@futureverse/auth-react";
+import { useSigner } from "@/hooks/useSigner";
+import { useCustomExtrinsicBuilder } from "@/hooks/useCustomExtrinsicBuilder";
+import { useTrnApi } from "@futureverse/transact-react";
+import { useCouncilMembers } from "@/hooks/useCouncilMembers";
+import { nominate } from "@/lib/utils";
 
 // interface ElectionsProps {
 //   onNavigate: (page: NavigationItem) => void;
 // }
-
-interface Candidate {
-  id: string;
-  name: string;
-  address: string;
-  description: string;
-  supportWeight: string;
-  votes: number;
-  isCurrentMember: boolean;
-  hasUserVoted: boolean;
-}
 
 interface ElectionConfig {
   candidacyBond: number;
@@ -56,95 +44,10 @@ const mockElectionConfig: ElectionConfig = {
   termRemainingMs: Math.floor(Math.random() * 28) * 24 * 60 * 60 * 1000, // Random days remaining in 28-day term
 };
 
-// const mockCandidates: Candidate[] = [
-//   {
-//     id: '1',
-//     name: 'FV Seona',
-//     address: '0vndh8..94803',
-//     description: 'Experienced blockchain developer with focus on decentralized governance. Active contributor to the Root Network ecosystem.',
-//     supportWeight: '2.4M ROOT',
-//     votes: 156,
-//     isCurrentMember: true,
-//     hasUserVoted: false,
-//   },
-//   {
-//     id: '2',
-//     name: 'Alexander Chen',
-//     address: '0x123..45678',
-//     description: 'Technical expert specializing in cross-chain infrastructure and protocol development.',
-//     supportWeight: '1.8M ROOT',
-//     votes: 134,
-//     isCurrentMember: true,
-//     hasUserVoted: true,
-//   },
-//   {
-//     id: '3',
-//     name: 'Maria Rodriguez',
-//     address: '0xabc..def99',
-//     description: 'Community advocate with deep expertise in governance processes and treasury management.',
-//     supportWeight: '1.6M ROOT',
-//     votes: 128,
-//     isCurrentMember: true,
-//     hasUserVoted: false,
-//   },
-//   {
-//     id: '4',
-//     name: 'David Kim',
-//     address: '0x789..abc12',
-//     description: 'Security specialist focusing on network resilience and risk management.',
-//     supportWeight: '1.4M ROOT',
-//     votes: 112,
-//     isCurrentMember: true,
-//     hasUserVoted: false,
-//   },
-//   {
-//     id: '5',
-//     name: 'Sarah Thompson',
-//     address: '0xfed..543ba',
-//     description: 'Ecosystem development lead with extensive experience in partnership building.',
-//     supportWeight: '1.2M ROOT',
-//     votes: 98,
-//     isCurrentMember: true,
-//     hasUserVoted: false,
-//   },
-//   {
-//     id: '6',
-//     name: 'Jennifer Martinez',
-//     address: '0x456..789ab',
-//     description: 'DeFi protocol architect with 5+ years experience in decentralized finance.',
-//     supportWeight: '950K ROOT',
-//     votes: 87,
-//     isCurrentMember: false,
-//     hasUserVoted: false,
-//   },
-//   {
-//     id: '7',
-//     name: 'Michael Chang',
-//     address: '0xcde..f012',
-//     description: 'Research scientist focused on consensus mechanisms and network optimization.',
-//     supportWeight: '820K ROOT',
-//     votes: 75,
-//     isCurrentMember: false,
-//     hasUserVoted: true,
-//   },
-//   {
-//     id: '8',
-//     name: 'Emma Watson',
-//     address: '0x345..678cd',
-//     description: 'Community manager and governance specialist with proven track record.',
-//     supportWeight: '670K ROOT',
-//     votes: 62,
-//     isCurrentMember: false,
-//     hasUserVoted: false,
-//   },
-// ];
-
 // export function Elections({ onNavigate }: ElectionsProps) {
 export function Elections() {
-  // const { isLoggedIn, userProfile } = useUser();
   const { userSession } = useAuth();
   const eoa = userSession?.eoa;
-  const fpass = userSession?.futurepass;
   const signer = useSigner();
   const { trnApi } = useTrnApi();
   const builder = useCustomExtrinsicBuilder({
@@ -152,10 +55,7 @@ export function Elections() {
     walletAddress: userSession?.eoa ?? "",
     trnApi,
   });
-  const [isCouncilMember, setIsCouncilMember] = useState(false);
-  // const { isLoggedIn, userRole, userProfile } = useUser();
   const userProfile = (userSession?.user?.profile?.profile as any)?.selectedProfile || {};
-  // const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
   const [userVotes, setUserVotes] = useState<string[]>([]);
   const [isNominateModalOpen, setIsNominateModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
@@ -163,7 +63,7 @@ export function Elections() {
   const [termCountdown, setTermCountdown] = useState<string>('');
   const [sortBy, setSortBy] = useState<'support-weight' | 'alphabet'>('support-weight');
   const { data: councilMembers } = useCouncilMembers();
-  const candidates = councilMembers?.filter(cm => cm.verified === false) || [];
+  const candidates = councilMembers?.filter((cm: any) => cm.verified === false) || [];
 
   // Nomination form state
   const [nominationForm, setNominationForm] = useState({
@@ -602,7 +502,7 @@ export function Elections() {
           </DialogHeader>
 
           <div className="space-y-4 py-4 max-h-96 overflow-y-auto">
-            {candidates.map((candidate) => (
+            {candidates.map((candidate: any) => (
               <div
                 key={candidate.id}
                 className={`p-4 rounded-lg border cursor-pointer transition-all ${

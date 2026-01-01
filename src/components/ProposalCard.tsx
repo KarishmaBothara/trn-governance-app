@@ -1,5 +1,4 @@
 import { Badge } from './ui/badge';
-import { ArrowUp, ArrowDown } from 'lucide-react';
 import { motion } from 'motion/react';
 import {Button} from "@/components/ui/button";
 import {useCouncilMembers} from "@/hooks/useCouncilMembers";
@@ -15,13 +14,17 @@ import {truncateAddress} from "@/lib/utils";
 export interface Proposal {
   id: string;
   title: string;
-  status: 'queued' | 'active' | 'passed' | 'rejected' | 'fast-tracked';
+  status: 'queued' | 'active' | 'passed' | 'rejected' | 'fast-tracked' | 'Cancelled' | 'Active';
   track: string;
   aye: number;
   nay: number;
   daysLeft: number;
   proposer: string;
   proposerAvatar?: string;
+  preimage: string;
+  description: string;
+  summary: string;
+  link: string;
 }
 
 interface ProposalCardProps {
@@ -52,7 +55,7 @@ const getTrackColor = () /*(track: string)*/ => {
 
 export function ProposalCard({ proposal, onSelect }: ProposalCardProps) {
   const { data: councilMembers } = useCouncilMembers();
-  const [isCouncilMember, setIsCouncilMember] = useState(false);
+  const [, setIsCouncilMember] = useState(false);
   const { userSession } = useAuth();
   const eoa = userSession?.eoa;
   const fpass = userSession?.futurepass;
@@ -72,17 +75,17 @@ export function ProposalCard({ proposal, onSelect }: ProposalCardProps) {
   useEffect(() => {
     if (councilMembers && eoa && fpass) {
       const selectedAccount = account === 'FPass' ? fpass : eoa;
-      const exist = councilMembers.find(cm => cm.address.toLowerCase() === selectedAccount.toLowerCase())
+      const exist = councilMembers.find((cm: any) => cm.address.toLowerCase() === selectedAccount.toLowerCase())
       if (exist) {
         setIsCouncilMember(true);
       }
     }
-  }, [councilMembers, eoa, fpass]);
+  }, [councilMembers, eoa, fpass, account]);
 
   const endorse = async () => {
       // Handle submission
       if (!signer || !userSession || !trnApi || !builder) return;
-      let extrinsic = trnApi.tx.democracy.second(proposal.id);
+      const extrinsic = trnApi.tx.democracy.second(proposal.id);
 
       const tx = account === 'FPass' ? await builder
           .fromExtrinsic(extrinsic)
@@ -98,7 +101,7 @@ export function ProposalCard({ proposal, onSelect }: ProposalCardProps) {
         onSend: async () => {
         }
       });
-      const { extrinsicId, transactionHash, result } = res;
+      const { result } = res;
       const event = result?.events.find((event) => {
             return event.event.section === "democracy" && event.event.method === "Seconded";
       });
@@ -113,39 +116,39 @@ export function ProposalCard({ proposal, onSelect }: ProposalCardProps) {
 
   };
 
-  const cancelProposal = async () => {
-    // Handle submission
-    if (!signer || !userSession || !trnApi || !builder) return;
-    let extrinsic = trnApi.tx.democracy.cancelProposal(proposal.id);
-
-    const tx = account === 'FPass' ? await builder
-        .fromExtrinsic(extrinsic)
-        .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
-
-    const res = await tx.signAndSend({
-      onSign: () => {
-        toast.info('Signing', {
-          description: `You proposal "${proposal.title}" cancelation request has been submitted.`,
-          duration: 5000,
-        });
-      },
-      onSend: async () => {
-      }
-    });
-    const { extrinsicId, transactionHash, result } = res;
-    const event = result?.events.find((event) => {
-      return event.event.section === "democracy" && event.event.method === "Seconded";
-    });
-    if(event) {
-      toast.success('Proposal canceled successfully!', {
-        description: `Your proposal "${proposal.title}" has been canceled successfully.`,
-        duration: 5000,
-      });
-    } else {
-      toast.info('Proposal cancelation failed!');
-    }
-
-  };
+  // const cancelProposal = async () => {
+  //   // Handle submission
+  //   if (!signer || !userSession || !trnApi || !builder) return;
+  //   let extrinsic = trnApi.tx.democracy.cancelProposal(proposal.id);
+  //
+  //   const tx = account === 'FPass' ? await builder
+  //       .fromExtrinsic(extrinsic)
+  //       .addFuturePass(userSession.futurepass) : await builder.fromExtrinsic(extrinsic);
+  //
+  //   const res = await tx.signAndSend({
+  //     onSign: () => {
+  //       toast.info('Signing', {
+  //         description: `You proposal "${proposal.title}" cancelation request has been submitted.`,
+  //         duration: 5000,
+  //       });
+  //     },
+  //     onSend: async () => {
+  //     }
+  //   });
+  //   const { extrinsicId, transactionHash, result } = res;
+  //   const event = result?.events.find((event) => {
+  //     return event.event.section === "democracy" && event.event.method === "Seconded";
+  //   });
+  //   if(event) {
+  //     toast.success('Proposal canceled successfully!', {
+  //       description: `Your proposal "${proposal.title}" has been canceled successfully.`,
+  //       duration: 5000,
+  //     });
+  //   } else {
+  //     toast.info('Proposal cancelation failed!');
+  //   }
+  //
+  // };
 
   return (
     <motion.div

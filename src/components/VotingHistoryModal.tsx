@@ -3,59 +3,18 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import * as React from "react";
-import {useProposalInfo} from "@/hooks/useProposal";
 import {useVotes} from "@/hooks/useVotes";
 // import {Proposal} from "../../generated/prisma";
-const leftIcon = "/../imports/left_icon.png";
 
 interface VotingHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  referendum: any
+  referendum?: any
 }
 
-// Mock voting history data
-// const votingHistory = [
-//   {
-//     voter: 'FV Seona',
-//     avatar: leftIcon,
-//     votes: 2000,
-//     delegated: 10,
-//     vote: 'aye' as const,
-//   },
-//   {
-//     voter: 'Alexander Chen',
-//     avatar: leftIcon,
-//     votes: 12000,
-//     delegated: null,
-//     vote: 'aye' as const,
-//   },
-//   {
-//     voter: 'Maria Rodriguez',
-//     avatar: leftIcon,
-//     votes: 1000,
-//     delegated: 25,
-//     vote: 'nay' as const,
-//   },
-//   {
-//     voter: 'David Kim',
-//     avatar: leftIcon,
-//     votes: 8000,
-//     delegated: null,
-//     vote: 'aye' as const,
-//   },
-//   {
-//     voter: 'Sarah Thompson',
-//     avatar: leftIcon,
-//     votes: 4000,
-//     delegated: null,
-//     vote: 'aye' as const,
-//   },
-// ];
-
 export function VotingHistoryModal({ isOpen, referendum, onClose }: VotingHistoryModalProps) {
+  const { data: voteData } = useVotes(referendum?.pId);
   if (!referendum) return;
-  const { data: voteData } = useVotes(referendum.pId);
   const votingHistory = voteData ? voteData : [];
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -111,7 +70,7 @@ export function VotingHistoryModal({ isOpen, referendum, onClose }: VotingHistor
               <h3 className="text-foreground">Voting History</h3>
 
               <div className="space-y-3">
-                {votingHistory.map((vote, index) => (
+                {votingHistory.map((vote: any, index: number) => (
                   <Card
                     key={index}
                     className="bg-card border border-border transition-all duration-200 hover:border-white/80"

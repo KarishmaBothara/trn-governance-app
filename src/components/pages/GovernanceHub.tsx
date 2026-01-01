@@ -6,7 +6,6 @@ import { ProposalCard } from '../ProposalCard';
 import { FeatureCard } from '../FeatureCard';
 import { Send, ArrowRightLeft, LayoutGrid } from 'lucide-react';
 import {useProposalInfo} from "@/hooks/useProposal";
-const imgLeftIcon = "/../../imports/left_icon.png";
 
 
 interface GovernanceHubProps {
@@ -15,104 +14,6 @@ interface GovernanceHubProps {
 }
 
 type ProposalTab = 'queued' | 'active' | 'history';
-
-interface Proposal {
-  id: string;
-  title: string;
-  status: 'queued' | 'active' | 'passed' | 'rejected' | 'fast-tracked';
-  track: string;
-  daysLeft: number;
-  proposalNumber: string;
-  description: string;
-  aye: number;
-  nay: number;
-  proposer: string;
-  proposerAvatar?: string;
-}
-
-// Mock proposal data with accurate 28-day scheduling cycles
-// const mockProposals: Proposal[] = [
-//   {
-//     id: '1',
-//     title: 'Proposal title goes here',
-//     status: 'queued',
-//     track: 'Root',
-//     daysLeft: Math.floor(Math.random() * 28) + 1, // Days until next 28-day scheduling cycle
-//     proposalNumber: '#63542',
-//     description: 'This is a brief description of the proposal that explains what it aims to achieve and why it matters.',
-//     aye: 75,
-//     nay: 25,
-//     proposer: 'FV Seona',
-//     proposerAvatar: imgLeftIcon,
-//   },
-//   {
-//     id: '2',
-//     title: 'Another proposal title',
-//     status: 'active',
-//     track: 'Treasurer',
-//     daysLeft: Math.floor(Math.random() * 28) + 1, // Days remaining in 28-day voting period
-//     proposalNumber: '#63543',
-//     description: 'Another proposal description that provides context and details about the proposed changes.',
-//     aye: 60,
-//     nay: 40,
-//     proposer: 'FV Seona',
-//     proposerAvatar: imgLeftIcon,
-//   },
-//   {
-//     id: '3',
-//     title: 'Third proposal example',
-//     status: 'passed',
-//     track: 'Fellow',
-//     daysLeft: 0,
-//     proposalNumber: '#63541',
-//     description: 'A passed proposal that was successfully approved by the community.',
-//     aye: 85,
-//     nay: 15,
-//     proposer: 'FV Seona',
-//     proposerAvatar: imgLeftIcon,
-//   },
-//   {
-//     id: '4',
-//     title: 'Fourth proposal title',
-//     status: 'rejected',
-//     track: 'Root',
-//     daysLeft: 0,
-//     proposalNumber: '#63540',
-//     description: 'A rejected proposal that did not gain sufficient community support.',
-//     aye: 30,
-//     nay: 70,
-//     proposer: 'FV Seona',
-//     proposerAvatar: imgLeftIcon,
-//   },
-//   {
-//     id: '5',
-//     title: 'Fifth proposal in queue',
-//     status: 'queued',
-//     track: 'Treasurer',
-//     daysLeft: Math.floor(Math.random() * 28) + 1, // Days until next scheduling cycle
-//     proposalNumber: '#63544',
-//     description: 'A queued proposal waiting for its turn in the governance pipeline.',
-//     aye: 0,
-//     nay: 0,
-//     proposer: 'FV Seona',
-//     proposerAvatar: imgLeftIcon,
-//   },
-//   {
-//     id: '6',
-//     title: 'Sixth active proposal',
-//     status: 'active',
-//     track: 'Fellow',
-//     daysLeft: Math.floor(Math.random() * 28) + 1, // Days remaining in voting period
-//     proposalNumber: '#63545',
-//     description: 'An active proposal currently under community voting.',
-//     aye: 45,
-//     nay: 55,
-//     proposer: 'FV Seona',
-//     proposerAvatar: imgLeftIcon,
-//   },
-// ];
-
-
 
 const quickActions = [
   {
@@ -142,11 +43,11 @@ export function GovernanceHub({ onNavigate, onSelectProposal }: GovernanceHubPro
   const getFilteredProposals = () => {
     switch (activeTab) {
       case 'queued':
-        return proposals.filter(p => p.status === 'queued');
+        return proposals.filter((p: any) => p.status === 'queued');
       case 'active':
-        return proposals.filter(p => p.status === 'active');
+        return proposals.filter((p: any) => p.status === 'active');
       case 'history':
-        return proposals.filter(p => p.status === 'passed' || p.status === 'rejected');
+        return proposals.filter((p: any) => p.status === 'passed' || p.status === 'rejected');
       default:
         return proposals;
     }
@@ -236,7 +137,7 @@ export function GovernanceHub({ onNavigate, onSelectProposal }: GovernanceHubPro
         {/* Tab Content */}
         <div className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {getFilteredProposals().map((proposal) => (
+            {getFilteredProposals().map((proposal: any) => (
               <ProposalCard
                 key={proposal.id}
                 proposal={proposal}

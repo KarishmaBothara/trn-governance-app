@@ -10,26 +10,22 @@ import {
   CouncilProps,
   CouncilTab,
   MotionStatus,
-  VoteType,
   CouncilMember,
-  UserVote,
   CancellationVote,
   CancellationVoteType
 } from '../council/types';
-import { mockMotions, mockCouncilMembers, mockCancellationMotions } from '../council/mockData';
 import { MotionCard } from '../council/MotionCard';
 import { CouncilMemberCard } from '../council/CouncilMemberCard';
 import { useTrnApi } from "@futureverse/transact-react";
 import { useCouncilMembers } from "@/hooks/useCouncilMembers";
-import {useCouncilProposals} from "@/hooks/useCouncilProposals";
-import {useEffect} from "react";
-import {useAuth} from "@futureverse/auth-react";
-import {useSigner} from "@/hooks/useSigner";
-import {useCustomExtrinsicBuilder} from "@/hooks/useCustomExtrinsicBuilder";
-import {useWeight} from "@/hooks/useWeight";
-import {closeVote, vote} from "@/lib/utils";
-import {ProposalType} from "../../../generated/prisma";
-import {useOldCouncilProposal} from "@/hooks/useOldCouncilProposal";
+import { useCouncilProposals } from "@/hooks/useCouncilProposals";
+import { useEffect } from "react";
+import { useAuth } from "@futureverse/auth-react";
+import { useSigner } from "@/hooks/useSigner";
+import { useCustomExtrinsicBuilder } from "@/hooks/useCustomExtrinsicBuilder";
+import { closeVote, vote } from "@/lib/utils";
+import { ProposalType } from "../../../generated/prisma";
+import { useOldCouncilProposal } from "@/hooks/useOldCouncilProposal";
 
 export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCouncilMember }: CouncilProps) {
   const { userSession } = useAuth();
@@ -50,8 +46,9 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
   const [showResignModal, setShowResignModal] = useState(false);
   const [selectedCouncilor, setSelectedCouncilor] = useState<CouncilMember | null>(null);
   const [showCouncilorModal, setShowCouncilorModal] = useState(false);
-  const [userVotes, setUserVotes] = useState<UserVote[]>([]);
-  const [cancellationVotes, setCancellationVotes] = useState<CancellationVote[]>([]);
+  // const [userVotes, setUserVotes] = useState<UserVote[]>([]);
+  const userVotes: any[] = [];
+  const [cancellationVotes] = useState<CancellationVote[]>([]);
   const { data: councilMembers } = useCouncilMembers();
   const { data: proposalDBInfo } = useCouncilProposals();
   const { data: oldProposals } = useOldCouncilProposal();
@@ -64,7 +61,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
 
   useEffect(() => {
     if (councilMembers && eoa && fpass) {
-      const exist = councilMembers.find(cm => cm.address.toLowerCase() === eoa.toLowerCase() || cm.address.toLowerCase() === fpass.toLowerCase())
+      const exist = councilMembers.find((cm: any) => cm.address.toLowerCase() === eoa.toLowerCase() || cm.address.toLowerCase() === fpass.toLowerCase())
       if (exist) {
         setIsCouncilMember(true);
       }
@@ -104,7 +101,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
 
     }
 
-  const handleCloseVote = async (motion: any, encodedCallLength: number, weight: any, voteType: VoteType, accountType: string) => {
+  const handleCloseVote = async (motion: any, encodedCallLength: number, weight: any, accountType: string) => {
     if (!signer || !userSession || !trnApi || !builder) return;
     const extrinsic = trnApi.tx.council.close(motion.hash || motion.preimage, motion?.idx, weight, encodedCallLength);
 
@@ -137,33 +134,38 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
   };
 
   const handleCancellationVote = (motionId: string, voteType: CancellationVoteType) => {
-    // Find the motion to get referendum ID
-    const motion = mockCancellationMotions.find(m => m.id === motionId);
-    if (!motion) return;
+    console.log("motion id:", motionId);
+    console.log("vote type:", voteType);
+  }
 
-    const existingVoteIndex = cancellationVotes.findIndex(vote => vote.referendumId === motion.referendumId);
-
-    if (existingVoteIndex >= 0) {
-      const existingVote = cancellationVotes[existingVoteIndex];
-      if (existingVote.voteType === voteType) {
-        // Remove vote if clicking the same action
-        setCancellationVotes(prev => prev.filter(vote => vote.referendumId !== motion.referendumId));
-        toast.success(`Vote removed for referendum cancellation`);
-      } else {
-        // Change vote type
-        setCancellationVotes(prev => prev.map(vote =>
-          vote.referendumId === motion.referendumId
-            ? { ...vote, voteType }
-            : vote
-        ));
-        toast.success(`Vote changed to ${voteType === 'cancel' ? 'cancel' : 'against'} for referendum ${motion.referendumId}`);
-      }
-    } else {
-      // Add new vote
-      setCancellationVotes(prev => [...prev, { referendumId: motion.referendumId, voteType }]);
-      toast.success(`Successfully voted to ${voteType === 'cancel' ? 'cancel' : 'keep'} referendum ${motion.referendumId}`);
-    }
-  };
+  // const handleCancellationVote = (motionId: string, voteType: CancellationVoteType) => {
+  //   // Find the motion to get referendum ID
+  //   const motion = mockCancellationMotions.find(m => m.id === motionId);
+  //   if (!motion) return;
+  //
+  //   const existingVoteIndex = cancellationVotes.findIndex(vote => vote.referendumId === motion.referendumId);
+  //
+  //   if (existingVoteIndex >= 0) {
+  //     const existingVote = cancellationVotes[existingVoteIndex];
+  //     if (existingVote.voteType === voteType) {
+  //       // Remove vote if clicking the same action
+  //       setCancellationVotes(prev => prev.filter(vote => vote.referendumId !== motion.referendumId));
+  //       toast.success(`Vote removed for referendum cancellation`);
+  //     } else {
+  //       // Change vote type
+  //       setCancellationVotes(prev => prev.map(vote =>
+  //         vote.referendumId === motion.referendumId
+  //           ? { ...vote, voteType }
+  //           : vote
+  //       ));
+  //       toast.success(`Vote changed to ${voteType === 'cancel' ? 'cancel' : 'against'} for referendum ${motion.referendumId}`);
+  //     }
+  //   } else {
+  //     // Add new vote
+  //     setCancellationVotes(prev => [...prev, { referendumId: motion.referendumId, voteType }]);
+  //     toast.success(`Successfully voted to ${voteType === 'cancel' ? 'cancel' : 'keep'} referendum ${motion.referendumId}`);
+  //   }
+  // };
 
   if (activeTab === 'propose' && isCouncilMember) {
     return (
@@ -257,7 +259,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
     );
   }
 
-  const filteredMotions = proposalDBInfo?.filter(p => p.id !== undefined && p.status === "Processing");//mockMotions.filter(motion => motion.status === activeMotionStatus);
+  const filteredMotions = proposalDBInfo?.filter((p: any) => p.id !== undefined && p.status === "Processing");
 
   return (
     <div className="space-y-8">
@@ -371,7 +373,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
           <div className="space-y-4">
             <h2 className="text-foreground">Council Members</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {councilMembers && councilMembers.map((member) => (
+              {councilMembers && councilMembers.map((member: any) => (
                 <CouncilMemberCard
                   key={member.id}
                   member={member}
@@ -399,7 +401,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
                 </div>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {oldProposals.map((motion) => (
+                {oldProposals.map((motion: any) => (
                   <CancellationMotionCard
                     key={motion.id}
                     motion={motion}
@@ -440,7 +442,7 @@ export function Council({ onNavigate, onSelectProposal, onSelectMotion, setIfCou
           {/* Motions Grid */}
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredMotions && filteredMotions.map((motion) => (
+              {filteredMotions && filteredMotions.map((motion: any) => (
                 <MotionCard
                   key={motion.id}
                   motion={motion}

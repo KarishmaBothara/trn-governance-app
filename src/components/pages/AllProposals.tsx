@@ -1,15 +1,14 @@
-import {useState, useEffect, useMemo} from 'react';
+import { useState, useEffect } from 'react';
 import { NavigationItem } from '@/app/page';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Badge } from '../ui/badge';
 import { ProposalCard } from '../ProposalCard';
-import { Search, Filter, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Filter, X, ArrowUpDown } from 'lucide-react';
 import { useProposalInfo } from "@/hooks/useProposal";
 import { useReferendumInfo } from "@/hooks/useReferendums";
 import { Referendum } from "@/components/pages/Referendum";
-import {useBestNumber} from "@/hooks/useBestNumber";
 
 const leftIcon = "/../../imports/left_icon.png";
 
@@ -47,13 +46,12 @@ export interface ReferendumInt {
 
 
 export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal, defaultTab = 'proposals' }: AllProposalsProps) {
-  const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
+  const [activeTab, setActiveTab] = useState<TabType>(defaultTab as TabType);
   const [searchTerm, setSearchTerm] = useState('');
   const { data: proposalData } = useProposalInfo();
-  const { data: bestNumber } = useBestNumber();
   const { data: referendumData } = useReferendumInfo();
 
-  let proposals = proposalData ? proposalData.map(p => {
+  let proposals = proposalData ? proposalData.map((p: any) => {
       const schedulingCycleDays = 28;
       const daysSinceLastSchedule = Math.floor(Math.random() * schedulingCycleDays);
       const daysUntilNextSchedule = schedulingCycleDays - daysSinceLastSchedule;
@@ -74,20 +72,21 @@ export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal,
       }
   }) : [];
 
-  proposals = referendumData && referendumData.length ? proposals.filter(p => referendumData.some(r=> r.idx !== p.id)) : proposals;
-  const referendums = referendumData ? referendumData.map(p => {
+  proposals = referendumData && referendumData.length ? proposals.filter((p: any) => referendumData.some((r: any)=> r.idx !== p.id)) : proposals;
+  const referendums = referendumData ? referendumData.map((p: any) => {
     const ayeVotes = p.voteCountAye;
     const nayVotes = p.voteCountNay;
     const totalVotes = ayeVotes + nayVotes;
     const ayePercentage = Math.round((ayeVotes / totalVotes) * 100) || 0;
     const nayPercentage = 100 - ayePercentage;
-    const { status, votedAye, votedNay, votedTotal } = p;
+    // const { status, votedAye, votedNay, votedTotal } = p;
+    const { status } = p;
     // const { changeAye, changeNay } = status && votedAye && votedNay ? useChangeCalc(status.threshold, votedAye, votedNay, votedTotal) : {changeAye: 0, changeNay: 0};
     // const threshold = useMemo(
     //     () => status.threshold.type.toString().replace('majority', ' majority '),
     //     [status]
     // );
-    const totalCalculated = votedAye.add(votedNay);
+    // const totalCalculated = votedAye.add(votedNay);
 
 
     return {
@@ -125,7 +124,7 @@ export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal,
   const [selectedTrack, setSelectedTrack] = useState('All Tracks');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
 
-  const filteredProposals = proposals.filter((proposal) => {
+  const filteredProposals = proposals.filter((proposal: any) => {
     // Search filter
     const matchesSearch = proposal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       proposal.id.includes(searchTerm) ||
@@ -140,7 +139,7 @@ export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal,
     return matchesSearch && matchesTrack && matchesStatus;
   });
 
-  const filteredReferendums = referendums.filter((referendum) => {
+  const filteredReferendums = referendums.filter((referendum: any) => {
     // Search filter
     const matchesSearch = referendum?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
       referendum.id.includes(searchTerm) ||
@@ -153,7 +152,7 @@ export function AllProposals({ onNavigate, onSelectProposalId, onSelectProposal,
     const matchesStatus = selectedStatus === 'All Status' || referendum.status === selectedStatus;
 
     return matchesSearch && matchesTrack && matchesStatus;
-  }).sort((a, b) => {
+  }).sort((a: any, b: any) => {
     // Sort to show active referendums first
     if (a.status === 'Active' && b.status !== 'Active') {
       return -1;

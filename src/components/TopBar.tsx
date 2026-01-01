@@ -11,7 +11,6 @@ import { useAuth } from "@futureverse/auth-react";
 // import { useTrnApi } from "@futureverse/transact-react";
 import { useRootBalanceInfo } from "@/hooks/useRootBalance";
 import { formatBalance } from "@/lib/utils";
-import { useSigner } from "@/hooks/useSigner";
 
 interface TopBarProps {
   onMobileMenuToggle?: () => void;
@@ -19,8 +18,6 @@ interface TopBarProps {
 
 
 export function TopBar({ onMobileMenuToggle }: TopBarProps) {
-  // const { isLoggedIn } = useUser();
-  const signer = useSigner();
 
   const { userSession } = useAuth();
   const { data: rootBalance, /*isLoading*/ } = useRootBalanceInfo();
@@ -33,13 +30,6 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
     profileName= (userSession.user?.profile?.profile as any)?.selectedProfile?.displayName || "User";
 
   }
-  //
-  // const {
-  //   data: pools,
-  //   isFetching: isFetchingPools,
-  //   isLoading: isLoadingPools,
-  // } = useRootBalanceInfo();
-
 
   return (
     <motion.div

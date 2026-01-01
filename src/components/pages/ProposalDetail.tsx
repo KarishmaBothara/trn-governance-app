@@ -5,17 +5,14 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Slider } from '../ui/slider';
 import { Input } from '../ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { VotingHistoryModal } from '../VotingHistoryModal';
 import { ConnectWalletButton } from '../ConnectWalletButton';
 import { ArrowLeft, ExternalLink, ArrowUp, ArrowDown, AlertTriangle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUser } from '../UserContext';
-import { mockCancellationMotions } from '../council/mockData';
-import { CancellationMotion } from '../council/types';
 import { Proposal } from "@/components/ProposalCard";
-// import {useProposalInfoFromId} from "@/hooks/useProposalInfoFromId";
-// import {useProposalInfo} from "@/hooks/useProposal";
+
 
 interface ProposalDetailProps {
   proposal: Proposal  | null;
@@ -33,7 +30,6 @@ export function ProposalDetail({ proposal, onNavigate }: ProposalDetailProps) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   // const [cancellationMotion, setCancellationMotion] = useState<CancellationMotion | null>(null);
   // const [timeRemaining, setTimeRemaining] = useState<string>('');
-  const [, setTimeRemaining] = useState<string>('');
   // Check if there's an active cancellation motion for this proposal
   // useEffect(() => {
   //   const motion = mockCancellationMotions.find(
@@ -110,7 +106,7 @@ export function ProposalDetail({ proposal, onNavigate }: ProposalDetailProps) {
   // }, [cancellationMotion]);
 
   // Initialize form with existing vote data when component loads
-  React.useEffect(() => {
+  useEffect(() => {
     if (existingVote) {
       setVoteDirection(existingVote.direction);
       setRootAmount(existingVote.amount);
@@ -119,6 +115,7 @@ export function ProposalDetail({ proposal, onNavigate }: ProposalDetailProps) {
   }, [existingVote]);
 
   const handleVoteSubmit = () => {
+    if (!proposal) return;
     // Don't allow voting on cancelled proposals
     if (proposal?.status === 'Cancelled') {
       toast.error('Cannot vote on a cancelled proposal');
@@ -397,7 +394,7 @@ export function ProposalDetail({ proposal, onNavigate }: ProposalDetailProps) {
           {/*</div>*/}
 
           {/* Cancel Proposal Button - Council Members Only, Active Proposals Only */}
-          {isCouncilMember && proposal?.status === 'Active' && !cancellationMotion && (
+          {isCouncilMember && proposal?.status === 'Active' && (
             <div className="bg-card rounded-2xl p-5">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">

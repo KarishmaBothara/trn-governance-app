@@ -34,7 +34,7 @@ export function useChangeCalc (threshold: VoteThreshold, votedAye: BN, votedNay:
       );
     };
     fetchElectorate();
-  }, [ threshold, votedAye, votedNay, votedTotal]);
+  }, [ threshold, trnApi, votedAye, votedNay, votedTotal]);
 
   return result;
 }
