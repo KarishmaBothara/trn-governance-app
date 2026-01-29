@@ -5,7 +5,7 @@ import { Card, CardContent } from '../ui/card';
 import { Clock } from 'lucide-react';
 import { CancellationMotion, CancellationVote, CancellationVoteType } from './types';
 import { NavigationItem } from "@/app/page";
-import {truncateAddress} from "@/lib/utils";
+import { truncateAddress } from "@/lib/utils";
 
 interface CancellationMotionCardProps {
   motion: CancellationMotion;
@@ -99,7 +99,7 @@ export function CancellationMotionCard({ motion, userVotes, onVote, isCouncilMem
                motion.status.toLowerCase() === 'passed' ? 'Passed' : 'Motion Failed'}
             </Badge>
             <Badge className="bg-chart-2/20 text-chart-2 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded">
-              {motion.title.length> 30 ? truncateAddress(motion.title, 20, 20).substring(2) : motion.title}
+              {motion.title.length> 30 ? truncateAddress(motion.title, 15, 15).substring(2) : motion.title}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ export function CancellationMotionCard({ motion, userVotes, onVote, isCouncilMem
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">Proposed by:</span>
               <span className="text-xs text-muted-foreground font-bold">
-                {motion.proposer}
+                ${truncateAddress(motion.proposer)}
               </span>
             </div>
           </div>

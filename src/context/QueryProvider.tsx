@@ -10,6 +10,7 @@ import React from "react";
 
 import { authClient, queryClient, wagmiConfig } from "./config";
 import { TrnApiProvider } from "@futureverse/transact-react";
+import 'dotenv/config';
 // import {WalletProvider} from "@/context/WalletContext";
 // import { AssetRegisterProvider } from "./AssetRegisterProvider";
 
@@ -32,9 +33,11 @@ const customThemeConfig: ThemeConfig = {
 };
 
 export function QueryProvider({ children }: React.PropsWithChildren) {
+  const endpoint = process.env.END_POINT;
   return (
     <QueryClientProvider client={queryClient}>
-      <TrnApiProvider customProviderUrl="ws://127.0.0.1:9944">
+      {/*<TrnApiProvider customProviderUrl="wss://root.rootnet.live/archive/ws">*/}
+      <TrnApiProvider customProviderUrl={endpoint}>
         <AuthUiProvider
           wagmiConfig={wagmiConfig}
           themeConfig={customThemeConfig}

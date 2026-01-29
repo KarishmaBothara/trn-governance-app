@@ -12,6 +12,7 @@ import { useCouncilMembers } from "@/hooks/useCouncilMembers";
 import { useWeight } from "@/hooks/useWeight";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import { ApiPromise } from "@polkadot/api";
+import { truncateAddress } from "@/lib/utils";
 
 interface MotionCardProps {
   motion: Motion;
@@ -167,7 +168,7 @@ export function MotionCard({ motion, userVotes, onVote, onClose, isCouncilMember
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Proposed by:</span>
             <span className="text-xs text-muted-foreground font-bold">
-              {motion.proposer}
+              ${truncateAddress(motion.proposer)}
             </span>
           </div>
         </div>

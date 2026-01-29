@@ -24,6 +24,7 @@ import { useCustomExtrinsicBuilder } from "@/hooks/useCustomExtrinsicBuilder";
 import { useSigner } from "@/hooks/useSigner";
 import LoadingComponent from "@/components/ui/loading";
 import { ProposalStatus, ProposalType } from "../../../generated/prisma";
+import 'dotenv/config';
 
 interface SubmitProposalProps {
   onNavigate: (page: NavigationItem) => void;
@@ -293,7 +294,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
         'FPass': { label: 'FPass', description: 'Use futurepass address' },
         'EOA': { label: 'EOA', description: 'Use eoa address' },
       },
-      deposit: '100 ROOT'
+      deposit: '1000 ROOT'
     },
     CouncilMotion: {
       label: 'Council Propose Motion',
@@ -385,7 +386,7 @@ export function SubmitProposal({ onNavigate }: SubmitProposalProps) {
       const param = trnApi.registry.createType('FrameSupportPreimagesBounded', {hash_: encodedHash, len: encodedLength}, 2);
       let extrinsic;
       if (proposalData.type === "Democracy") {
-        extrinsic = trnApi.tx.democracy.propose(param, 100000000);
+        extrinsic = trnApi.tx.democracy.propose(param, process.env.PROPOSAL_AMOUNT);
       } else if (proposalData.type === "CouncilMotion") {
         extrinsic = trnApi.tx.council.propose(proposalData.threshold, proposalExt, encodedLength);
       } else if (proposalData.type === "CouncilExternalMotion") {
